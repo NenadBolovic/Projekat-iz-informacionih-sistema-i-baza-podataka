@@ -2,7 +2,8 @@
 
 Repozitorijum za projekat iz PisIBP2
 
-Postavka zadatka koji je potrebno projektovati je prikazana preko linka
+Postavka zadatka koji je potrebno projektovati je data u repozitorijumu.
+
 
 Članovi tima:
 Nenad Bolović 644/2021 
