@@ -81,6 +81,6 @@ router.patch('/updateQuestion', uploadMiddleware, async(req,res)=>{
 
 
 router.patch('/move',moveQuestionHandler);
-router.delete('/',deleteQuestionHandler);
+router.delete('/deleteQuestion',deleteQuestionHandler);
 
 export default router;
