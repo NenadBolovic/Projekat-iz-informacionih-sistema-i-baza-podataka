@@ -1,0 +1,8 @@
+11.5.2025. Stanje apsolutno zalosno, sustinski nista ne radi.
+13.5.2025. Zavrsio CRUD za korisnike, dobar napredak.
+21.5.2025. Sredio listu korisnika,
+22.5.2025. Zavrsetak CRUD testa za forme
+25.5.2025. Zavrsio Test za popunjavanje formulara i uradio male korekcije za CRUD test za formulare
+29.5.2025. Nailazim na probleme sa js delom softvera. Trenutni plan je da naucim kako rade bundleri i automatizujem rad istih kako bi bundlovali sve sto se uradi na bekendu pri
+           svakoj upotrebi pytesta.
+31.5.2025. Pocetak prepravaljanja QA testova da se zapravo fokusiraju na adekvatne stvari
