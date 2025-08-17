@@ -1,0 +1,136 @@
+services:
+  api-gateway:
+    container_name: api-gateway
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "3005:3005"
+    volumes:
+      - ./api-gateway:/api-gatewayapp
+      - ./downloads:/api-gatewayapp/downloads
+    networks:
+      - app-network
+
+  formsquestions:
+    container_name: formsquestions
+    build:
+      context: ./formsquestions
+      dockerfile: Dockerfile
+    ports:
+      - "3006:3006"
+    env_file:
+      - ./.env
+    volumes:
+      - ./formsquestions:/formsquestionsapp
+      - formsquestions-images:/usr/src/app/uploads
+    networks:
+      - app-network
+    depends_on:
+      - mongo-db
+
+  answers:
+    container_name: answers
+    build:
+      context: ./answers
+      dockerfile: Dockerfile
+    ports: 
+      - "3002:3002"
+    env_file:
+      - ./.env
+    volumes:
+      - ./answers:/answersapp
+      #- /answersapp/node_modules
+      - answers-images:/usr/src/app/uploads  
+      - ./downloads:/answersapp/downloads
+    networks:
+      - app-network
+    depends_on:
+      - mongo-db
+
+  users:
+    container_name: users
+    build:
+      context: ./users
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./.env
+    volumes:
+      - ./users:/usersapp
+      - /usersapp/node_modules  
+    networks:
+      - app-network
+    depends_on:
+      - users-db
+
+  authentication:
+    container_name: authentication
+    build:
+      context: ./authentication
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    env_file:
+      - ./.env
+      #- ./authentication/.env
+    networks:
+      - app-network
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    #env_file:
+    #  - ./front/.env
+    networks:
+      - app-network
+    depends_on:
+      - api-gateway
+
+  mongo-db:
+    image: mongo:6
+    container_name: mongo-db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-db-data:/data/db
+      - ./init-formsquestions.js:/docker-entrypoint-initdb.d/init-formsquestions.js:ro
+      - ./init-answers.js:/docker-entrypoint-initdb.d/init-answers.js:ro
+    env_file:
+      - ./.env
+    networks:
+      - app-network  
+
+  users-db:
+    image: mysql:8
+    container_name: users-db
+    env_file:
+      - ./.env
+    volumes:
+      - users-db-data:/var/lib/mysql
+      - ./init-usersdb.sql:/docker-entrypoint-initdb.d/init-usersdb.sql
+      #- ./mysql-scripts/users:/docker-entrypoint-initdb.d 
+    ports:
+      - "3004:3306"
+    networks:
+      - app-network
+    restart: always
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-db-data:  
+  users-db-data:
+  formsquestions-images:
+  answers-db-data:
+  answers-images:

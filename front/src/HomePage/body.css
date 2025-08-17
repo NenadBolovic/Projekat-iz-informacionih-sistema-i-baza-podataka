@@ -1,0 +1,6 @@
+.body-container {
+    display: flex;
+    flex-wrap: wrap;  /* Omogućava prelazak u novi red */
+    gap: 10px; /* Razmak između kartica */
+    justify-content: flex-start; /* Poravnanje sa leve strane */
+}

@@ -1,0 +1,118 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+
+/* Navbar container */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0; /* Ensure it sticks to the top */
+  z-index: 1000;
+  background-color: #bca0ec; /* Light purple background */
+  padding: 10px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+/* Logo/icon */
+.form-icon {
+  width: 2.2rem; /* Adjust size for your logo/icon */
+}
+
+/* Header info (left side) */
+.header-info {
+  display: flex;
+  align-items: center;
+}
+
+.info {
+  color: #566368;
+  font-size: 22px;
+  padding-left: 10px;
+  border-radius: 5px;
+  font-family: "Google Sans", sans-serif; /* Optional font style */
+}
+
+/* Navigation links (right side) */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Space between links */
+}
+
+/* Link styles */
+.nav-link {
+  text-decoration: none; /* Remove underline */
+  color: white; /* White text color */
+  padding: 8px 16px; /* Add padding for button-like appearance */
+  background-color: #673ab7; /* Deep purple button color */
+  border-radius: 5px; /* Rounded edges */
+  font-family: "Google Sans", sans-serif; /* Optional font style */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Hover effects */
+}
+
+/* Link hover effects */
+.nav-link:hover {
+  background-color: #5e35b1; /* Darker purple on hover */
+  transform: scale(1.05); /* Slight zoom on hover */
+}
+
+
+
+/*header css*/
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  background-color: #bca0ec;
+}
+
+.form-icon {
+  width: 2.2rem;
+}
+
+.header-info,
+.header-search,
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.info {
+  color: #566368;
+  font-size: 22px;
+  padding-left: 10px;
+  border-radius: 5px;
+  font-family: "Google Sans", sans-serif;
+}
+
+.header-search {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: #f4f4f9;
+  width: 700px;
+  height: 45px;
+  border-radius: 5px;
+}
+
+.header-search > input {
+  border: none;
+  width: 100%;
+  outline: none;
+  background-color: transparent;
+}

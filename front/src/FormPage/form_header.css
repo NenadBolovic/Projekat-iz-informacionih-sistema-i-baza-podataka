@@ -1,0 +1,28 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    background-color: #bca0ec;
+    margin-bottom: 2%;
+  }
+  
+  .form-icon {
+    width: 2.2rem;
+  }
+  
+  .header-info,
+  .header-right {
+    display: flex;
+    align-items: center;
+  }
+  
+  .info {
+    color: #566368;
+    font-size: 22px;
+    padding-left: 10px;
+    border-radius: 5px;
+    font-family: "Google Sans", sans-serif;
+  }
+  
+ 

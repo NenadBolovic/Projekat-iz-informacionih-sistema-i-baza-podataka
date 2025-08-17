@@ -1,0 +1,49 @@
+.card {
+    border: 1px solid hsl(0, 0%, 50%);
+    border-radius: 10px;
+    max-width: 250px;
+    max-height: 250px;
+    margin: 5px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 5px 5px 5px hsla(0, 0%, 0%, 0.4);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+/* 🟢 Animacija kada pređeš mišem */
+.card:hover {
+    transform: scale(1.01);
+    box-shadow: 8px 8px 15px hsla(0, 0%, 0%, 0.5);
+}
+
+/* 🔵 Animacija kada klikneš */
+.card:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+}
+
+.card-icon {
+    max-width: 60%;
+    margin-bottom: 5px;
+    height: auto;
+    border-radius: 20%;
+    transition: transform 0.3s ease;
+}
+
+/* Animacija za ikonicu kada pređeš mišem */
+.card:hover .card-icon {
+    transform: rotate(1deg);
+}
+
+.card-text {
+    font-family: Arial, sans-serif;
+    font-size: 1.3rem;
+    color: hsl(0, 0%, 30%);
+    transition: color 0.3s ease;
+}
+
+/* Promena boje teksta na hover */
+.card:hover .card-text {
+    color: hsl(240, 100%, 50%);
+}
