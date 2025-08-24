@@ -42,6 +42,10 @@ export function createAddUser({ isUserUnique, createUser }) {
         if (!firstname || !lastname || !username || !password || !email) {
           throw new BadRequestError("All fields are required");
         }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if(!emailRegex.test(email)){
+            throw new BadRequestError("Form of email is not correct");
+        }
         const hashedPassword = await argon2.hash(password);
         const isUnique = await isUserUnique(username,email);
         if (!isUnique) {

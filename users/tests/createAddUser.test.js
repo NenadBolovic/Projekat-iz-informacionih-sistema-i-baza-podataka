@@ -51,6 +51,14 @@ describe('createAddUser', () => {
         expect(next.args[0][0].message).to.equal("All fields are required");
     });
 
+    it('should return 400 if form of email is not valid', async()=>{
+        req.body.email="lalalala";
+        await addUser(req,res,next);
+        expect(next.calledOnce).to.be.true;
+        expect(next.args[0][0]).to.be.instanceOf(BadRequestError);
+        expect(next.args[0][0].message).to.equal("Form of email is not correct");
+    });
+
     it('should return 400 when username or email already exists', async () => {
         isUserUniqueStub.resolves(false);
         await addUser(req, res, next);
