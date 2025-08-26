@@ -91,12 +91,16 @@ export async function addQuestions(questionsWithFormId) {
     }
 }
 
-export async function searchFormsDB(searchString){
+export async function searchFormsDB(searchString,userId){
     try{
-        const forms = await Form.find({
-            name: { $regex: searchString, $options: 'i' }
-        });
-        
+        const query = {
+            name: { $regex: searchString, $options: 'i' },
+            locked:0
+        };
+        if(!userId){
+            query.indicator=0;
+        }
+        const forms=await Form.find(query);
         return forms;
     }catch(err){
         console.error("Error searching form: ", err);

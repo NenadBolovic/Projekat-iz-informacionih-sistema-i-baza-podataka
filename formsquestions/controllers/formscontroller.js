@@ -172,16 +172,14 @@ export async function searchForms({axiosInstance,searchFormsDB}) {
         try {
             
             const token = req.header('Authorization')?.replace('Bearer ', '');
-            
-            if (!token) {
-                
-                throw new UnauthorizedError('Access denied, no token provided');
-            }
-            const response = await axiosInstance.post(`${AUTH_SERVICE_URL}/validateToken`, {}, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if(!response.data.user || !response.data.user.userId){
-                throw new UnauthorizedError('Invalid token.')
+            let userId=null;
+            if(token){
+                const response = await axiosInstance.post(`${AUTH_SERVICE_URL}/validateToken`, {}, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (response?.data?.user?.userId) {
+                        userId = response.data.user.userId;
+                } 
             }
             const searchString = req.query.q.trim();
             
@@ -189,7 +187,7 @@ export async function searchForms({axiosInstance,searchFormsDB}) {
                 //return res.status(400).json({ success: false, message: 'Invalid or missing search string' });
                 throw new BadRequestError('Invalid or missing search string');
             }
-            const forms = await searchFormsDB(searchString);
+            const forms = await searchFormsDB(searchString,userId);
             return res.status(200).json({ success: true, forms: forms }); 
         } catch (err) {
             console.error('Error searching form:', err);

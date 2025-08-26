@@ -31,18 +31,7 @@ describe('PATCH /forms', () => {
         sinon.restore();
     });
 
-    it('Token is not provided', async()=>{
-        req.header.returns(null);
-        await searchFormTest(req,res,next);
-        expect(next.firstCall.args[0]).to.be.instanceOf(UnauthorizedError);
-    });
-
-    it('Invalid token,unauthorized error', async()=>{
-        req.header.returns('validToken');
-        mockAxiosInstance.post.resolves({data:{}});
-        await searchFormTest(req,res,next);
-        expect(next.firstCall.args[0]).to.be.instanceOf(UnauthorizedError);
-    });
+    
 
     it('Not given formId or name, bad request', async()=>{
         req.header.returns('validToken');
