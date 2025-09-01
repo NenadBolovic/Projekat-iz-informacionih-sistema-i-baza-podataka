@@ -37,11 +37,16 @@ for i in listakorisnika:
 kolekcija.delete_many({})
 kveri = "DELETE FROM users WHERE firstname = %s"
 ime = "testjoe"
-kursor.execute(kveri, (ime,) )
-kveri2 = "DELETE FROM users WHERE firstname = %s"
 ime2 = "ime"
+ime3 = "kolaborator"
+ime4 = "testjoe1"
+kursor.execute(kveri, (ime,) )
 kursor.execute(kveri, (ime2,) )
+kursor.execute(kveri, (ime3,) )
+kursor.execute(kveri, (ime4,) )
 konekcija.commit()
 
 kursor.close()
 konekcija.close()
+
+#napravi isto ovo za brisanje pitanja
