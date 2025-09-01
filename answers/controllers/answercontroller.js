@@ -242,13 +242,29 @@ export async function sendUsersAnswers({axios,addUserAnswers}) {
                         }
                     });
                 }
-                const answersTransformed=answers.map((answer,index)=>({
-                    ...answer,
-                    questionType: questionsTypes[index],
-                    required: questionsRequired[index],
-                }));
                 
-                const isValid = validateAnswers(answers);
+                const answersTransformed = answers.map((answer, index) => {                  
+                    const transformedAnswer = {
+                        ...answer,
+                        questionType: questionsTypes[index],
+                        required: questionsRequired[index] === 1,
+                    };
+                    if (questionsTypes[index] === 'multiple-choice-multiple' && 
+                        typeof transformedAnswer.answer === 'string') {
+                        if (!transformedAnswer.answer.trim()) {
+                            transformedAnswer.answer = [];
+                        } else {
+                            transformedAnswer.answer = transformedAnswer.answer
+                                .split(', ')
+                                .map(item => item.trim())
+                                .filter(item => item !== '');
+                        }
+                    }
+                    return transformedAnswer;
+                });
+                console.log('Transformed answers:', JSON.stringify(answersTransformed, null, 2));
+
+                const isValid = validateAnswers(answersTransformed);
                 
                 if (isValid === 0) {
                     console.error('Validation failed for some answers');

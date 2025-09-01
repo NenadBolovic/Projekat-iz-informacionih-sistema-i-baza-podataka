@@ -5,8 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { useUser } from "../Usercontext/UserContext";
 
-
-
 function LogIn() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -47,6 +45,7 @@ function LogIn() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage(""); // Clear previous errors
+
     try {
       const response = await axios.post("http://localhost:3005/api/authentication/login", {
         username: formData.username,

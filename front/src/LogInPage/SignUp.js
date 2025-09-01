@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import "./login.css";
 
-
-
 function SignUp() {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -39,7 +37,7 @@ function SignUp() {
   
     // Log the payload to ensure all fields are present
     
-    
+  
     try {
       const response = await fetch("http://localhost:3005/api/authentication/register", {
         method: "POST",

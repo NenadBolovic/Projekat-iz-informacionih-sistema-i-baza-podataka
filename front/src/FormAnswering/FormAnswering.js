@@ -7,12 +7,17 @@ import {
   FormControlLabel,
   RadioGroup,
   Radio,
-  // --- 1. Import Dialog components ---
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
+  Checkbox,
+  FormGroup,
+  Box,
+  Typography,
+  Slider,
+  Paper,
 } from "@mui/material";
 import "./form_answering.css";
 
@@ -21,8 +26,6 @@ function FormAnsweringPage() {
   const [formData, setFormData] = useState(null);
   const [answers, setAnswers] = useState({});
   const [error, setError] = useState("");
-  
-  // --- 2. State to control the success dialog ---
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -47,9 +50,25 @@ function FormAnsweringPage() {
         return res.json();
       })
       .then((data) => {
-        // This logic is from your working version
         if (data.form || data._id) {
-            setFormData(data.form || data);
+            const formDataObj = data.form || data;
+            setFormData(formDataObj);
+            
+            // Initialize answers
+            const initialAnswers = {};
+            if (formDataObj.questions) {
+              formDataObj.questions.forEach(q => {
+                if (q.questionType === "multiple-choice-multiple") {
+                  initialAnswers[q._id] = [];
+                }
+                // Initialize numeric values to their minimum value
+                if (q.questionType === "numeric" && q.numericAttributes?.min !== undefined) {
+                  initialAnswers[q._id] = q.numericAttributes.min;
+                }
+              });
+              
+              setAnswers(initialAnswers);
+            }
         } else {
             setError(data.message || "Failed to load form data.");
         }
@@ -57,18 +76,37 @@ function FormAnsweringPage() {
       .catch((error) => setError(error.message));
   }, []);
 
-  const handleAnswerChange = (questionId, value, questionType) => {
+  const handleAnswerChange = (questionId, value, questionType, optionText) => {
     let updatedValue = value;
+    
     if (questionType === "numeric") {
-      updatedValue = value === "" ? null : Number(value);
+      updatedValue = value === "" ? 0 : Number(value);
       if (isNaN(updatedValue)) {
-        updatedValue = null;
+        updatedValue = 0;
       }
+      setAnswers(prev => ({...prev, [questionId]: updatedValue}));
+    } 
+    else if (questionType === "multiple-choice-multiple") {
+      // Handle checkbox selections (add/remove from array)
+      const currentSelections = [...(answers[questionId] || [])];
+      
+      if (value) { // checkbox checked
+        if (!currentSelections.includes(optionText)) {
+          currentSelections.push(optionText);
+        }
+      } else { // checkbox unchecked
+        const index = currentSelections.indexOf(optionText);
+        if (index > -1) {
+          currentSelections.splice(index, 1);
+        }
+      }
+      
+      setAnswers(prev => ({...prev, [questionId]: currentSelections}));
     }
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: updatedValue,
-    }));
+    else {
+      // For all other types (text, date, time, radio buttons)
+      setAnswers(prev => ({...prev, [questionId]: value}));
+    }
   };
 
   const handleSubmit = () => {
@@ -83,11 +121,21 @@ function FormAnsweringPage() {
     const formId = window.location.pathname.split("/").pop();
     const answersData = {
       formId,
-      answers: formData.questions.map((q, index) => ({
-        questionId: index,
-        questionType: q.questionType,
-        answer: answers[q._id] !== undefined ? answers[q._id] : "",
-      })),
+      answers: formData.questions.map((q, index) => {
+        // Format the answer based on question type
+        let answerValue = answers[q._id] !== undefined ? answers[q._id] : "";
+        
+        // For multiple-choice-multiple, join array to string
+        if (q.questionType === "multiple-choice-multiple" && Array.isArray(answerValue)) {
+          answerValue = answerValue.join(", ");
+        }
+        
+        return {
+          questionId: index,
+          questionType: q.questionType,
+          answer: answerValue
+        };
+      }),
     };
 
     const formDataToSubmit = new FormData();
@@ -108,7 +156,6 @@ function FormAnsweringPage() {
       })
       .then((data) => {
         if (data.success || data.answers) {
-          // --- 3. Open the dialog on success ---
           setIsSuccessDialogOpen(true);
           setError("");
         } else {
@@ -116,22 +163,52 @@ function FormAnsweringPage() {
         }
       })
       .catch((err) => setError(err.message));
-    };
+  };
     
-  // --- 4. Function to close dialog and navigate ---
   const handleCloseSuccessDialog = () => {
     setIsSuccessDialogOpen(false);
     navigate("/");
   };
 
+  // Simplified numeric input with just a slider
+  const renderNumericInput = (question) => {
+    const min = question.numericAttributes?.min !== undefined ? question.numericAttributes.min : 0;
+    const max = question.numericAttributes?.max !== undefined ? question.numericAttributes.max : 100;
+    const step = question.numericAttributes?.step !== undefined ? question.numericAttributes.step : 1;
+    
+    // Ensure there's always a value for the slider
+    const currentValue = answers[question._id] !== undefined ? answers[question._id] : min;
+    
+    return (
+      <Paper elevation={0} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: '8px' }}>
+        <Typography gutterBottom>
+          Selected value: <strong>{currentValue}</strong>
+        </Typography>
+        <Box sx={{ px: 1, py: 2 }}>
+          <Slider
+            value={currentValue}
+            onChange={(e, newValue) => 
+              handleAnswerChange(question._id, newValue, question.questionType)
+            }
+            valueLabelDisplay="auto"
+            step={step}
+            marks
+            min={min}
+            max={max}
+          />
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+          <Typography variant="caption" color="text.secondary">Min: {min}</Typography>
+          <Typography variant="caption" color="text.secondary">Max: {max}</Typography>
+        </Box>
+      </Paper>
+    );
+  };
 
   if (error) return <p style={{ color: "red" }}>{error}</p>;
   if (!formData) return <p>Loading form...</p>;
   
-  // The old success message block is removed.
-  
   return (
-    // --- 5. Wrap in a Fragment to hold the form and the dialog ---
     <>
       <div className="form-container">
         <h2>{formData.name}</h2>
@@ -140,6 +217,8 @@ function FormAnsweringPage() {
           {formData.questions.map((question) => (
             <div key={question._id} className="question-form">
               <p>{question.questionText}</p>
+              
+              {/* Short text input */}
               {question.questionType === "short-text" && (
                 <TextField
                   fullWidth
@@ -150,8 +229,24 @@ function FormAnsweringPage() {
                   }
                 />
               )}
+              
+              {/* Long text input - multiline */}
+              {question.questionType === "long-text" && (
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  placeholder="Type your answer..."
+                  value={answers[question._id] || ""}
+                  onChange={(e) =>
+                    handleAnswerChange(question._id, e.target.value, question.questionType)
+                  }
+                />
+              )}
+              
+              {/* Single choice radio buttons */}
               {question.questionType === "multiple-choice-single" && (
-                <FormControl component="fieldset">
+                <FormControl component="fieldset" fullWidth>
                   <RadioGroup
                     value={answers[question._id] || ""}
                     onChange={(e) =>
@@ -169,31 +264,78 @@ function FormAnsweringPage() {
                   </RadioGroup>
                 </FormControl>
               )}
-              {question.questionType === "numeric" && (
+              
+              {/* Multiple choice checkboxes */}
+              {question.questionType === "multiple-choice-multiple" && (
+                <FormControl component="fieldset" fullWidth>
+                  <FormGroup>
+                    {question.options.map((option, index) => (
+                      <FormControlLabel
+                        key={index}
+                        control={
+                          <Checkbox
+                            checked={answers[question._id]?.includes(option.text) || false}
+                            onChange={(e) =>
+                              handleAnswerChange(
+                                question._id,
+                                e.target.checked,
+                                question.questionType,
+                                option.text
+                              )
+                            }
+                          />
+                        }
+                        label={option.text}
+                      />
+                    ))}
+                  </FormGroup>
+                </FormControl>
+              )}
+              
+              {/* Simplified numeric input with just slider */}
+              {question.questionType === "numeric" && renderNumericInput(question)}
+              
+              {/* Date input */}
+              {question.questionType === "date" && (
                 <TextField
-                  type="number"
-                  inputProps={{
-                    min: question.numericAttributes?.min || 0,
-                    max: question.numericAttributes?.max || 100,
-                    step: question.numericAttributes?.step || 1,
-                  }}
-                  value={
-                    answers[question._id] !== undefined ? answers[question._id] : ""
-                  }
+                  type="date"
+                  fullWidth
+                  value={answers[question._id] || ""}
                   onChange={(e) =>
                     handleAnswerChange(question._id, e.target.value, question.questionType)
                   }
                 />
               )}
+              
+              {/* Time input */}
+              {question.questionType === "time" && (
+                <TextField
+                  type="time"
+                  fullWidth
+                  value={answers[question._id] || ""}
+                  onChange={(e) =>
+                    handleAnswerChange(question._id, e.target.value, question.questionType)
+                  }
+                />
+              )}
+              
+              {/* If the question is required, show a visual indicator */}
+              {question.required === 1 && (
+                <Typography variant="caption" color="error">* Required</Typography>
+              )}
             </div>
           ))}
         </div>
-        <Button variant="contained" color="success" onClick={handleSubmit}>
+        <Button 
+          variant="contained" 
+          color="success" 
+          onClick={handleSubmit}
+          sx={{ mt: 2 }}
+        >
           Submit
         </Button>
       </div>
 
-      {/* --- 6. The Success Dialog --- */}
       <Dialog
         open={isSuccessDialogOpen}
         onClose={handleCloseSuccessDialog}

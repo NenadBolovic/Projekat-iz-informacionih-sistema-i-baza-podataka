@@ -15,9 +15,9 @@ import {
   ListItem,
   ListItemText,
   Chip,
-  Button // 1. Import Button
+  Button
 } from '@mui/material';
-import DownloadIcon from '@mui/icons-material/Download'; // 1. Import the icon
+import DownloadIcon from '@mui/icons-material/Download';
 import { isAuthenticated } from '../auth/authUtils';
 
 function FormAnalytics() {
@@ -26,7 +26,7 @@ function FormAnalytics() {
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [exporting, setExporting] = useState(false); // 2. New state for the export process
+  const [exporting, setExporting] = useState(false);
   
   const [form, setForm] = useState(null);
   const [answers, setAnswers] = useState([]);
@@ -36,6 +36,57 @@ function FormAnalytics() {
 
   const apiBase = 'http://localhost:3005/api';
   const getToken = () => localStorage.getItem('token');
+
+  // Helper function to format answer values based on question type
+  const formatAnswerValue = (answer, question) => {
+    if (!answer || answer.answer === undefined || answer.answer === "") {
+      return "No answer provided";
+    }
+    
+    // Get the corresponding question to determine the type
+    const questionType = question ? question.questionType : answer.questionType;
+    
+    switch (questionType) {
+      case "date":
+        // Format date as YYYY-MM-DD
+        try {
+          const dateObj = new Date(answer.answer);
+          if (isNaN(dateObj)) return answer.answer; // Return original if invalid date
+          return dateObj.toLocaleDateString('en-CA'); // en-CA gives YYYY-MM-DD format
+        } catch (e) {
+          return answer.answer;
+        }
+        
+      case "time":
+        // If it's already in HH:MM format, return as is
+        if (typeof answer.answer === 'string' && /^\d{2}:\d{2}$/.test(answer.answer)) {
+          return answer.answer;
+        }
+        // Otherwise try to format it
+        try {
+          const timeObj = new Date(answer.answer);
+          if (isNaN(timeObj)) return answer.answer;
+          return timeObj.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: false 
+          });
+        } catch (e) {
+          return answer.answer;
+        }
+        
+      case "numeric":
+        // Format numbers with appropriate precision
+        if (typeof answer.answer === 'number') {
+          return answer.answer.toString();
+        }
+        return answer.answer;
+        
+      default:
+        // For text and multiple choice, return as is
+        return answer.answer;
+    }
+  };
 
   // This useEffect fetches the core form and answer data (no changes here)
   useEffect(() => {
@@ -100,10 +151,9 @@ function FormAnalytics() {
     fetchUserNames();
   }, [answers]);
 
-  // 3. New function to handle the Excel export
+  // Function to handle the Excel export
   const handleExport = async () => {
     setExporting(true);
-    // Clear previous export-related errors
     setError('');
     const token = getToken();
 
@@ -120,7 +170,6 @@ function FormAnalytics() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      // Use the form name in the filename, with a fallback
       link.setAttribute('download', `${form.name || 'form-data'}.xlsx`);
       document.body.appendChild(link);
       link.click();
@@ -133,7 +182,6 @@ function FormAnalytics() {
       setExporting(false);
     }
   };
-
 
   const handleViewChange = (event, newViewMode) => {
     if (newViewMode !== null) {
@@ -170,15 +218,19 @@ function FormAnalytics() {
     return map;
   }, [form]);
 
+  const questionTypeMap = useMemo(() => {
+    if (!form?.questions) return new Map();
+    const map = new Map();
+    form.questions.forEach((q, index) => map.set(index, q.questionType));
+    return map;
+  }, [form]);
 
   if (loading) return <Box sx={{ p: 4, textAlign: 'center' }}><CircularProgress /></Box>;
-  // Don't show a full-page error if the error is just from a failed export
   if (error && !exporting) return <Alert severity="error" sx={{ m: 4 }}>{error}</Alert>;
   if (!form) return <Alert severity="info" sx={{ m: 4 }}>No data found for this form.</Alert>;
 
   return (
     <Box sx={{ maxWidth: 900, margin: 'auto', mt: 4, p: 2 }}>
-      {/* 4. Updated header with the export button */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Box>
           <Typography variant="h4" gutterBottom>Form Analytics</Typography>
@@ -194,7 +246,6 @@ function FormAnalytics() {
           {exporting ? 'Exporting...' : 'Export to Excel'}
         </Button>
       </Box>
-      {/* Show an alert specifically for export errors */}
       {error && exporting && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
 
       <Paper sx={{ display: 'flex', justifyContent: 'center', p: 1, my: 3 }}>
@@ -204,7 +255,7 @@ function FormAnalytics() {
         </ToggleButtonGroup>
       </Paper>
 
-      {/* Grouped view - unchanged */}
+      {/* Grouped view - with formatted answers */}
       {viewMode === 'grouped' && (
         <Box>
           {form.questions.map(question => (
@@ -216,7 +267,8 @@ function FormAnalytics() {
                   {groupedAnswers.get(question._id)?.length > 0 ? (
                     groupedAnswers.get(question._id).map(answer => (
                       <ListItem key={answer._id} sx={{ borderBottom: '1px solid #eee' }}>
-                        <ListItemText primary={answer.answer} />
+                        {/* Format the answer based on question type */}
+                        <ListItemText primary={formatAnswerValue(answer, question)} />
                       </ListItem>
                     ))
                   ) : (
@@ -229,7 +281,7 @@ function FormAnalytics() {
         </Box>
       )}
 
-      {/* Individual view - unchanged */}
+      {/* Individual view - with formatted answers */}
       {viewMode === 'individual' && (
         <Box>
           {individualSubmissions.map(([userId, userAnswers]) => (
@@ -245,16 +297,23 @@ function FormAnalytics() {
                   />
                 </Box>
                 <Divider />
-                {userAnswers.map(answer => (
-                  <Box key={answer._id} sx={{ mt: 2, mb: 1 }}>
-                    <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                      {questionTextMap.get(answer.questionId) || `Unknown Question (ID: ${answer.questionId})`}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ pl: 2, fontStyle: 'italic' }}>
-                      - "{answer.answer}"
-                    </Typography>
-                  </Box>
-                ))}
+                {userAnswers.map(answer => {
+                  const questionType = questionTypeMap.get(answer.questionId);
+                  // Add the question type to the answer for formatting
+                  const enhancedAnswer = { ...answer, questionType };
+                  
+                  return (
+                    <Box key={answer._id} sx={{ mt: 2, mb: 1 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                        {questionTextMap.get(answer.questionId) || `Unknown Question (ID: ${answer.questionId})`}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ pl: 2, fontStyle: 'italic' }}>
+                        {/* Format the answer based on its type */}
+                        - "{formatAnswerValue(enhancedAnswer)}"
+                      </Typography>
+                    </Box>
+                  );
+                })}
               </CardContent>
             </Card>
           ))}

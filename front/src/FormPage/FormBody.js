@@ -220,12 +220,41 @@ function FormBody() {
       collaborators: finalCollaboratorsIds,
       observers: finalObserversIds,
       questions: questions.map((q) => {
+        // Map each UI question type to the correct database question type
+        let questionType;
+        switch(q.type) {
+          case "short-text": 
+            questionType = "short-text"; 
+            break;
+          case "long-text": 
+            questionType = "long-text"; 
+            break;
+          case "single-choice": 
+            questionType = "multiple-choice-single"; 
+            break;
+          case "multiple-choice": 
+            questionType = "multiple-choice-multiple"; 
+            break;
+          case "numeric": 
+            questionType = "numeric"; 
+            break;
+          case "date": 
+            questionType = "date"; 
+            break;
+          case "time": 
+            questionType = "time"; 
+            break;
+          default: 
+            questionType = q.type; // Fallback to the original type
+        }
+        
         const questionObj = {
           questionText: q.text,
-          questionType: q.type === "single-choice" ? "multiple-choice-single" : q.type, //ovde treba umesto qtype "multiple-choice-multiple"
+          questionType: questionType,
           required: q.isRequired ? 1 : 0,
           options: q.options?.filter(opt => opt.trim() !== "").map(opt => ({ text: opt })) || [],
         };
+        
         if (q.type === "numeric") {
           questionObj.numericAttributes = {
             min: q.settings?.min ? parseFloat(q.settings.min) : null,
@@ -233,6 +262,7 @@ function FormBody() {
             step: q.settings?.step ? parseFloat(q.settings.step) : 1,
           };
         }
+        
         if (q.image) questionObj.questionImage = q.image;
         return questionObj;
       }),
@@ -257,7 +287,7 @@ function FormBody() {
         console.error("Error submitting form:", err);
         alert(`Error: ${err.message}`);
     }
-  };
+};
 
   return (
     <div className="form-container" style={{ maxWidth: 900, margin: 'auto' }}>

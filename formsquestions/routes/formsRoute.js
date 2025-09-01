@@ -53,13 +53,13 @@ const searchFormsHandler= await searchForms({
 router.post(
     '/',
     uploadMiddleware, 
-    async (req, res) => {
+    async (req, res,next) => {
         try {
             
             req.body.formData = JSON.parse(req.body.formData);
             
             req.files = req.files || [];
-            await createFormHandler(req, res); 
+            await createFormHandler(req, res,next); 
         } catch (error) {
             console.error('Error in POST /forms:', error);
             if(req.files || Array.isArray(req.files)){
