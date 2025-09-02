@@ -255,28 +255,18 @@ function EditFormPage() {
 
   // API: Delete one existing question
   const deleteOneQuestion = async (questionId) => {
-    const token = getToken();
+     const token = getToken();
     if (!token) throw new Error("No token");
-    const fd = new FormData();
-    fd.append("questionId", questionId);
 
-    console.log("🚀 Sending Question Deletion (FormData):", { questionId });
-
-    let res = await fetch(`${apiBase}/questions/deleteQuestion`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: fd,
+    console.log("🚀 Sending Question Deletion (JSON):", { questionId });
+    const res = await fetch(`${apiBase}/questions/deleteQuestion`, {
+      method: "DELETE",
+      headers: { 
+        "Content-Type": "application/json", 
+        Authorization: `Bearer ${token}` 
+      },
+      body: JSON.stringify({ questionId }),
     });
-
-    if (!res.ok && (res.status === 404 || res.status === 405)) {
-      console.warn(`FormData POST failed. Trying JSON POST fallback.`);
-      console.log("🚀 Sending Question Deletion (JSON):", { questionId });
-      res = await fetch(`${apiBase}/questions/deleteQuestion`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ questionId }),
-      });
-    }
 
     const body = await readResponseBody(res);
     if (!res.ok) throw new Error(`Delete failed for question ${questionId}: ${JSON.stringify(body)}`);

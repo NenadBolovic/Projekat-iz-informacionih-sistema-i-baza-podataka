@@ -232,7 +232,8 @@ export async function sendUsersAnswers({axios,addUserAnswers}) {
                             const questionId = parseInt(fieldname.split('-')[1], 10);
                             const answer = answers.find((a) => a.questionId === questionId);
                             if (answer) {
-                                answer.answerImage = filePath; 
+                                //answer.answerImage = filePath; 
+                                answer.answerImage = `/images/${file.filename}`;
                                 console.log(`Atached image to questionId ${questionId}:`, filePath);
                             } else {
                                 console.warn(`No answer found for  qID ${questionId}`);

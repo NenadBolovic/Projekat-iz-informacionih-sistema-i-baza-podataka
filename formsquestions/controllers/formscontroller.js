@@ -75,7 +75,8 @@ export async function createForm({ axiosInstance, addForm, addQuestions }) {
                             const questionIndex = parseInt(fieldname.split('-')[1], 10);
             
                             if (questionsWithFormId[questionIndex]) {
-                                questionsWithFormId[questionIndex].questionImage = filePath;
+                                //questionsWithFormId[questionIndex].questionImage = filePath;
+                                questionsWithFormId[questionIndex].questionImage = `/images/${file.filename}`;
                             }
                         } 
                     });
