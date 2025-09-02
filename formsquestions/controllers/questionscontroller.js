@@ -53,7 +53,8 @@ export async function addQuestionsToForm({axiosInstance,getHighestQuestionIdByFo
                         const questionIndex = parseInt(fieldname.split('-')[1], 10);
             
                         if (questionsWithFormId[questionIndex]) {
-                            questionsWithFormId[questionIndex].questionImage=filePath;
+                            //questionsWithFormId[questionIndex].questionImage=filePath;
+                            questionsWithFormId[questionIndex].questionImage=`/images/${file.filename}`;
                             console.log(`Atached image to questionId ${questionsWithFormId[questionIndex]}: ${filePath}`);
                         } else {
                             console.error(`No matching question found for questionImage`);
@@ -122,7 +123,8 @@ export async function updateQuestion({axiosInstance,getQuestionById,updateQuesti
                     const { fieldname, path: filePath } = file;
             
                     if (fieldname.startsWith('questionImage')) {
-                        updateData.questionImage=filePath;
+                        //updateData.questionImage=filePath;
+                        updateData.questionImage = `/images/${file.filename}`;
                     } 
                 });
             }
