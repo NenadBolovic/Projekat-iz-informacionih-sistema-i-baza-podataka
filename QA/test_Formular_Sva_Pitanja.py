@@ -122,3 +122,20 @@ def test_dodavanja_pitanja():
     dodavanjepitanja = requests.post(urlzadodavanje, headers=Header,files=files)
 
     assert dodavanjepitanja.status_code == 201
+
+def test_brisanje():
+    urlbrisanja = "http://localhost:3005/api/formsquestions/forms/deleteForm"
+    jsonbrisanja = {
+        "formId" : idforme
+    }
+    brisanje = requests.delete(urlbrisanja, headers=Header, json=jsonbrisanja)
+    assert brisanje.status_code == 200
+
+def test_delete_user():
+    url5 = "http://localhost:3005/api/users/users/delete"
+
+    brisanjekorisnika = requests.delete(url5, headers=Header)
+
+    #print("\n",brisanjekorisnika.status_code,"\n")
+
+    assert brisanjekorisnika.status_code == 200

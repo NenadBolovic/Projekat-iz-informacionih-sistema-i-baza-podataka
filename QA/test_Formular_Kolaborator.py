@@ -6,6 +6,8 @@ import json
 from test_Users_CRUD import kreacija_jsona
 from test_Formulari_CRUD import kreacijaforme
 import time
+from selenium.webdriver.chrome.service import Service
+
 
 def kreacija_kolaboratora():
     #unikatan username i imejl
