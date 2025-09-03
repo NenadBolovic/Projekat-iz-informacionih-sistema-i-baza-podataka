@@ -38,7 +38,14 @@ export async function addQuestionsToForm({axiosInstance,getHighestQuestionIdByFo
                 //return res.status(403).json({success: false, message: 'You do not have permission'});
                 throw new ForbiddenError('You do not have permission');
             }
-            const existingQuestionCount=(await getHighestQuestionIdByFormIdDB(formId))+1;
+            const getOrderOfPreviousQuestion=await getHighestQuestionIdByFormIdDB(formId);
+            let existingQuestionCount;
+            if(getOrderOfPreviousQuestion==0){
+                existingQuestionCount=0;
+            }else{
+                existingQuestionCount=getOrderOfPreviousQuestion+1;
+            }
+            //const existingQuestionCount=(await getHighestQuestionIdByFormIdDB(formId))+1;
             const questionsWithFormId = questions.map((q,index) => ({
                 ...q, 
                 formId,
@@ -212,6 +219,14 @@ export async function deleteQuestion({axiosInstance,getQuestionById,getFormByIdD
             if(!result || !result.deletedCount){
                 throw new InternalServerError('Question is not deleted.')
             }
+
+            await axiosInstance.post(`${ANSWERS_SERVICE_URL}/deleteByQuestion`, {
+                formId: question.formId, 
+                questionId: question.questionId 
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
             return res.status(200).json({success: true, message: "Questions deleted",result:result});
         }catch(err){
             console.error("Error in deleting question ",err.message);
