@@ -1,6 +1,6 @@
 import express from 'express';
-import { getAnswers,sendUsersAnswers,getAnswersOfForm,getAnswersByGroup,getAnswersByUser,exportQuestionsAndAnswers,deleteAnswers } from '../controllers/answercontroller.js';
-import { addUserAnswers,deleteAnswersDB,getAnswersOfFormDB,getAnswersByUserId,getAnswersByFIDQID} from '../db/answerdatabase.js';
+import { getAnswers,sendUsersAnswers,getAnswersOfForm,getAnswersByGroup,getAnswersByUser,exportQuestionsAndAnswers,deleteAnswers,deleteAnswersOfQuestion } from '../controllers/answercontroller.js';
+import { addUserAnswers,deleteAnswersDB,getAnswersOfFormDB,getAnswersByUserId,getAnswersByFIDQID,deleteAnswersByQuestionDB} from '../db/answerdatabase.js';
 import axios from 'axios';
 import { uploadMiddleware } from '../middlewares/uploadMiddleware.js';
 import { deleteFile } from '../utils/deleteFile.js';
@@ -38,6 +38,12 @@ const getAnswersByGroupHandler=await getAnswersByGroup({
     getAnswersByFIDQID
 })
 
+const deleteAnswersByQuestionHandler = await deleteAnswersOfQuestion({
+    axios: axios,
+    getAnswersByFIDQID,
+    deleteAnswersByQuestionDB,
+});
+
 
 
 router.get("/", getAnswers);
@@ -46,7 +52,7 @@ router.get("/getGroupedAnswers/:formId/:questionOrderId", getAnswersByGroupHandl
 router.get("/getUsersAnswers/:formId/:userAnswersId", getAnswersByUserHandler);
 router.get("/export/:formId", exportQuestionsAndAnswersHandler);
 router.delete("/delete", deleteAnswersHandler);
-
+router.post("/deleteByQuestion", deleteAnswersByQuestionHandler); //dodato
 
 router.post('/',uploadMiddleware,
     async(req,res,next)=>{

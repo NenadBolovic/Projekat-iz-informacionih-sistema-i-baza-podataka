@@ -419,4 +419,44 @@ export async function deleteAnswers({axios,getAnswersOfFormDB,deleteAnswersDB}){
     }
 }
 
+export async function deleteAnswersOfQuestion({axios, getAnswersByFIDQID, deleteAnswersByQuestionDB}) {
+    return async (req, res, next) => {
+        try {
+            const token = req.header('Authorization')?.replace('Bearer ', '');
+            if (!token) throw new UnauthorizedError('Access denied, no token provided');
+
+            const response = await axios.post(`${AUTH_SERVICE_URL}/validateToken`, {}, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!response.data.user || !response.data.user.userId) {
+                throw new UnauthorizedError('Invalid token.');
+            }
+
+            const { formId, questionId } = req.body;
+            console.log("FORMID");
+            console.log(formId);
+            console.log("QUESTIONID");
+            console.log(questionId);
+            if (!formId || questionId==null) {
+                throw new BadRequestError('formId or questionId not provided');
+            }
+
+            const answers = await getAnswersByFIDQID(formId, questionId);
+
+            for (const answer of answers) {
+                if (answer.answerImage) {
+                    await deleteFile(answer.answerImage);
+                }
+            }
+
+            const responseDB = await deleteAnswersByQuestionDB(formId, questionId);
+
+            res.status(200).json({ success: true, message: 'Answers for question deleted', deleted: responseDB });
+        } catch (error) {
+            console.error('Error deleting answers of question', error.message);
+            next(error);
+        }
+    };
+}
+
 

@@ -135,4 +135,14 @@ export async function deleteAnswersDB(formIdParam) {
     }
 }
 
+export async function deleteAnswersByQuestionDB(formIdParam,questionIdParam) {
+    try {
+        const response = await Answer.deleteMany({ formId: formIdParam,questionId: questionIdParam });
+        return { success: true, message: `${response.deletedCount} answers of form ${formIdParam}` };
+    } catch (error) {  
+        console.error('Answer database: Error deleting answers by formId and questionId', error);
+        throw error;  
+    }
+}
+
 
