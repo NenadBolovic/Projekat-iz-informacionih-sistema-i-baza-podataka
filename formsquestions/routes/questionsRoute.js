@@ -46,10 +46,10 @@ const cloneQuestionHandler=await cloneQuestion({
 
 router.post('/cloneQuestion',cloneQuestionHandler);
 
-router.post('/addQuestions', uploadMiddleware, async (req,res) => {
+router.post('/addQuestions', uploadMiddleware, async (req,res,next) => {
     try{
         req.body.formData=JSON.parse(req.body.formData);
-        await addQuestionsHandler(req,res);
+        await addQuestionsHandler(req,res,next);
     }catch(error){
         console.error('Error in POST /forms/addQuestions: ',error);
         if(req.files || Array.isArray(req.files)){
@@ -57,17 +57,18 @@ router.post('/addQuestions', uploadMiddleware, async (req,res) => {
                 req.files.map(file=> deleteFile(file.path))
             );
         }
-        res.status(500).json({message: 'Intenal Server Error',error});
+        
+        next(error);
     }
 });
 
 
 
-router.patch('/updateQuestion', uploadMiddleware, async(req,res)=>{
+router.patch('/updateQuestion', uploadMiddleware, async(req,res,next)=>{
     try{
         req.body.updateData=JSON.parse(req.body.updateData);
         
-        await updateQuestionHandler(req,res);
+        await updateQuestionHandler(req,res,next);
     }catch(error){
         console.error("APP: Error in updating question",error);
         if(req.files || Array.isArray(req.files)){
@@ -75,7 +76,8 @@ router.patch('/updateQuestion', uploadMiddleware, async(req,res)=>{
                 req.files.map(file=> deleteFile(file.path))
             );
         }
-        res.status(500).json({message: 'Greska', error});
+        
+        next(error);
     }
 });
 
