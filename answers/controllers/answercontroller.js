@@ -433,11 +433,9 @@ export async function deleteAnswersOfQuestion({axios, getAnswersByFIDQID, delete
             }
 
             const { formId, questionId } = req.body;
-            console.log("FORMID");
-            console.log(formId);
-            console.log("QUESTIONID");
-            console.log(questionId);
+            
             if (!formId || questionId==null) {
+                
                 throw new BadRequestError('formId or questionId not provided');
             }
 

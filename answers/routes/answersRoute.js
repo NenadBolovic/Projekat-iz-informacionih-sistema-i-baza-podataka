@@ -62,9 +62,7 @@ router.post('/',uploadMiddleware,
             } else {
                 return res.status(400).json({ message: 'No answerData provided' });
             }
-            console.log("APP");
-            console.log(req.files);
-            console.log("APP");
+            
             await addUserAnswersHandler(req,res,next);
         } catch (error) {
             console.error('Error in POST /answers:', error);
@@ -73,7 +71,7 @@ router.post('/',uploadMiddleware,
                     req.files.map(file=> deleteFile(file.path))
                 );
             }
-            res.status(500).json({ message: 'Internal Server Error', error });
+            next(error);
         }
     }
 )
