@@ -21,11 +21,11 @@ jobs:
 
     #  Build all services
     - name: Build Docker images
-      run: docker-compose build
+      run: docker compose build
 
     #  Start all services in detached mode
     - name: Start services
-      run: docker-compose up -d
+      run: docker compose up -d
 
     # - name: Run tests
     #   run: docker-compose exec -T users npm test
@@ -34,4 +34,4 @@ jobs:
 
     #  Shutdown services and clean up
     - name: Shutdown services
-      run: docker-compose down
+      run: docker compose down
