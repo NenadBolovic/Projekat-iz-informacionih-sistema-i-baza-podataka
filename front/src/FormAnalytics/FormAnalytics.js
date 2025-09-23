@@ -37,6 +37,23 @@ function FormAnalytics() {
   const apiBase = 'http://localhost:3005/api';
   const getToken = () => localStorage.getItem('token');
 
+  // Base for serving images via API
+  const formsApiBase = 'http://localhost:3005/api/formsquestions';
+
+  // Resolve a stored questionImage into a fetchable URL
+  const resolveQuestionImageSrc = (imgPath) => {
+    if (!imgPath) return null;
+    if (/^https?:\/\//i.test(imgPath)) return imgPath;
+
+    // If path contains /images/<filename>, use images endpoint
+    const match = imgPath.match(/(?:^|\/)images\/([^/?#]+)/i);
+    if (match && match[1]) {
+      return `${formsApiBase}/images/${encodeURIComponent(match[1])}`;
+    }
+    // Fallback: prefix with formsApiBase
+    return `${formsApiBase}${imgPath.startsWith('/') ? '' : '/'}${imgPath}`;
+  };
+
   // Helper function to format answer values based on question type
   const formatAnswerValue = (answer, question) => {
     if (!answer || answer.answer === undefined || answer.answer === "") {
@@ -48,47 +65,34 @@ function FormAnalytics() {
     
     switch (questionType) {
       case "date":
-        // Format date as YYYY-MM-DD
         try {
           const dateObj = new Date(answer.answer);
-          if (isNaN(dateObj)) return answer.answer; // Return original if invalid date
-          return dateObj.toLocaleDateString('en-CA'); // en-CA gives YYYY-MM-DD format
-        } catch (e) {
+          if (isNaN(dateObj)) return answer.answer;
+          return dateObj.toLocaleDateString('en-CA'); // YYYY-MM-DD
+        } catch {
           return answer.answer;
         }
-        
       case "time":
-        // If it's already in HH:MM format, return as is
         if (typeof answer.answer === 'string' && /^\d{2}:\d{2}$/.test(answer.answer)) {
           return answer.answer;
         }
-        // Otherwise try to format it
         try {
           const timeObj = new Date(answer.answer);
           if (isNaN(timeObj)) return answer.answer;
-          return timeObj.toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            hour12: false 
-          });
-        } catch (e) {
+          return timeObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        } catch {
           return answer.answer;
         }
-        
       case "numeric":
-        // Format numbers with appropriate precision
         if (typeof answer.answer === 'number') {
-          return answer.answer.toString();
+          return String(answer.answer);
         }
         return answer.answer;
-        
       default:
-        // For text and multiple choice, return as is
         return answer.answer;
     }
   };
 
-  // This useEffect fetches the core form and answer data (no changes here)
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate('/login');
@@ -124,21 +128,17 @@ function FormAnalytics() {
     fetchData();
   }, [formId, navigate]);
 
-  // This useEffect fetches usernames after answers are loaded (no changes here)
   useEffect(() => {
     if (answers.length === 0) return;
 
     const fetchUserNames = async () => {
       const token = getToken();
-      const userIds = [...new Set(answers.map(a => a.userId))];
-      
+      const userIds = [...new Set(answers.map(a => a.userId))].filter(id => id !== 0); // skip anonymous
       const promises = userIds.map(id =>
         fetch(`${apiBase}/users/users/${id}`, { headers: { 'Authorization': `Bearer ${token}` } })
           .then(res => res.ok ? res.json() : null)
       );
-
       const users = await Promise.all(promises);
-      
       const namesMap = new Map();
       users.forEach(user => {
         if (user) {
@@ -151,7 +151,6 @@ function FormAnalytics() {
     fetchUserNames();
   }, [answers]);
 
-  // Function to handle the Excel export
   const handleExport = async () => {
     setExporting(true);
     setError('');
@@ -189,17 +188,26 @@ function FormAnalytics() {
     }
   };
 
-  // All memoized data processing hooks remain unchanged
+  // Helper to get the stable question key (prefer question.questionId; fallback to index)
+  const getQuestionKey = (q, index) => {
+    return typeof q.questionId === 'number' && !Number.isNaN(q.questionId)
+      ? Number(q.questionId)
+      : Number(index);
+  };
+
+  // Group answers by question _id, matching via stable questionId
   const groupedAnswers = useMemo(() => {
     const groups = new Map();
     if (!form?.questions) return groups;
     form.questions.forEach((question, index) => {
-      const relevantAnswers = answers.filter(a => a.questionId === index);
+      const key = getQuestionKey(question, index);
+      const relevantAnswers = answers.filter(a => Number(a.questionId) === key);
       groups.set(question._id, relevantAnswers);
     });
     return groups;
   }, [form, answers]);
 
+  // Submissions grouped by user
   const individualSubmissions = useMemo(() => {
     const submissions = new Map();
     for (const answer of answers) {
@@ -211,17 +219,24 @@ function FormAnalytics() {
     return Array.from(submissions.entries());
   }, [answers]);
   
+  // Maps keyed by stable questionId (number)
   const questionTextMap = useMemo(() => {
     if (!form?.questions) return new Map();
     const map = new Map();
-    form.questions.forEach((q, index) => map.set(index, q.questionText));
+    form.questions.forEach((q, index) => {
+      const key = getQuestionKey(q, index);
+      map.set(key, q.questionText);
+    });
     return map;
   }, [form]);
 
   const questionTypeMap = useMemo(() => {
     if (!form?.questions) return new Map();
     const map = new Map();
-    form.questions.forEach((q, index) => map.set(index, q.questionType));
+    form.questions.forEach((q, index) => {
+      const key = getQuestionKey(q, index);
+      map.set(key, q.questionType);
+    });
     return map;
   }, [form]);
 
@@ -255,68 +270,110 @@ function FormAnalytics() {
         </ToggleButtonGroup>
       </Paper>
 
-      {/* Grouped view - with formatted answers */}
+      {/* Grouped view - with question image (small) above the answers */}
       {viewMode === 'grouped' && (
         <Box>
-          {form.questions.map(question => (
-            <Card key={question._id} sx={{ mb: 2 }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>{question.questionText}</Typography>
-                <Divider sx={{ mb: 2 }} />
-                <List dense>
-                  {groupedAnswers.get(question._id)?.length > 0 ? (
-                    groupedAnswers.get(question._id).map(answer => (
-                      <ListItem key={answer._id} sx={{ borderBottom: '1px solid #eee' }}>
-                        {/* Format the answer based on question type */}
-                        <ListItemText primary={formatAnswerValue(answer, question)} />
-                      </ListItem>
-                    ))
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">No answers for this question yet.</Typography>
+          {form.questions.map((question, index) => {
+            const imgSrc = resolveQuestionImageSrc(question.questionImage);
+            return (
+              <Card key={question._id} sx={{ mb: 2 }}>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>{question.questionText}</Typography>
+
+                  {imgSrc && (
+                    <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center' }}>
+                      <img
+                        src={imgSrc}
+                        alt="Slika pitanja"
+                        loading="lazy"
+                        style={{
+                          maxWidth: 220,
+                          maxHeight: 130,
+                          width: 'auto',
+                          height: 'auto',
+                          borderRadius: 6,
+                          objectFit: 'contain',
+                          border: '1px solid #eee',
+                          background: '#fafafa',
+                          padding: 4,
+                        }}
+                        onError={(e) => {
+                          // Fallback to api path concatenation if images/<filename> fails
+                          const fallback = `${formsApiBase}${question.questionImage?.startsWith('/') ? '' : '/'}${question.questionImage || ''}`;
+                          if (fallback && e.currentTarget.src !== fallback) {
+                            e.currentTarget.src = fallback;
+                          }
+                        }}
+                      />
+                    </Box>
                   )}
-                </List>
-              </CardContent>
-            </Card>
-          ))}
+
+                  <Divider sx={{ mb: 2 }} />
+                  <List dense>
+                    {groupedAnswers.get(question._id)?.length > 0 ? (
+                      groupedAnswers.get(question._id).map(answer => (
+                        <ListItem key={answer._id} sx={{ borderBottom: '1px solid #eee' }}>
+                          <ListItemText primary={formatAnswerValue(answer, question)} />
+                        </ListItem>
+                      ))
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">No answers for this question yet.</Typography>
+                    )}
+                  </List>
+                </CardContent>
+              </Card>
+            );
+          })}
         </Box>
       )}
 
-      {/* Individual view - with formatted answers */}
+      {/* Individual view - with formatted answers and Anonymous label for userId 0 */}
       {viewMode === 'individual' && (
         <Box>
-          {individualSubmissions.map(([userId, userAnswers]) => (
-            <Card key={userId} sx={{ mb: 2 }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6" component="span" sx={{ mr: 1.5 }}>
-                    Submission from:
-                  </Typography>
-                  <Chip
-                    label={userNames.get(userId) || `User ID: ${userId}`}
-                    color="primary"
-                  />
-                </Box>
-                <Divider />
-                {userAnswers.map(answer => {
-                  const questionType = questionTypeMap.get(answer.questionId);
-                  // Add the question type to the answer for formatting
-                  const enhancedAnswer = { ...answer, questionType };
-                  
-                  return (
-                    <Box key={answer._id} sx={{ mt: 2, mb: 1 }}>
-                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                        {questionTextMap.get(answer.questionId) || `Unknown Question (ID: ${answer.questionId})`}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ pl: 2, fontStyle: 'italic' }}>
-                        {/* Format the answer based on its type */}
-                        - "{formatAnswerValue(enhancedAnswer)}"
-                      </Typography>
-                    </Box>
-                  );
-                })}
-              </CardContent>
-            </Card>
-          ))}
+          {individualSubmissions.map(([userId, userAnswers]) => {
+            const chipLabel = userId === 0
+              ? 'Anonymous'
+              : (userNames.get(userId) || `User ID: ${userId}`);
+
+            // Only render answers whose question mapping exists
+            const filteredAnswers = userAnswers.filter(a => questionTextMap.has(Number(a.questionId)));
+
+            return (
+              <Card key={userId} sx={{ mb: 2 }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6" component="span" sx={{ mr: 1.5 }}>
+                      Submission from:
+                    </Typography>
+                    <Chip label={chipLabel} color="primary" />
+                  </Box>
+                  <Divider />
+                  {filteredAnswers.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                      No valid answers to display for this submission.
+                    </Typography>
+                  ) : (
+                    filteredAnswers.map(answer => {
+                      const qId = Number(answer.questionId);
+                      const questionType = questionTypeMap.get(qId);
+                      const enhancedAnswer = { ...answer, questionType };
+                      
+                      return (
+                        <Box key={answer._id} sx={{ mt: 2, mb: 1 }}>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                            {questionTextMap.get(qId)}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ pl: 2, fontStyle: 'italic' }}>
+                            - "{formatAnswerValue(enhancedAnswer)}"
+                          </Typography>
+                        </Box>
+                      );
+                    })
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </Box>
       )}
     </Box>
