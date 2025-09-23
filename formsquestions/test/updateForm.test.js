@@ -121,6 +121,33 @@ describe('PATCH /forms', () => {
         await updateFormTest(req,res,next);
         expect(next.firstCall.args[0]).to.be.instanceOf(InternalServerError);
     });
+
+    it('Collaborator tries to add a new collaborator, forbidden', async () => {
+        req.header.returns('validToken');
+        mockAxiosInstance.post.resolves({data:{user:{userId:6} } }); 
+        mockGetFormByIdDB.resolves({authId: 1, formId: "67aa60d2948dbcbb65cdda25",name: "Originalna forma",
+            description: "Originalna deskripcija",indicator: 1,locked: 1,collaborators: [6],observers: []
+        });
+        req.body.collaborators = [6,7]; 
+
+        await updateFormTest(req, res, next);
+        expect(next.firstCall.args[0]).to.be.instanceOf(ForbiddenError);
+        expect(next.firstCall.args[0].message).to.equal("Only the owner can add collaborators and observers.");
+    });
+
+    it('Collaborator tries to remove a collaborator, forbidden', async () => {
+        req.header.returns('validToken');
+        mockAxiosInstance.post.resolves({ data: { user: { userId: 6 } } }); 
+        mockGetFormByIdDB.resolves({
+            authId: 1, formId: "67aa60d2948dbcbb65cdda25",name: "Originalna forma",description: "Originalna deskripcija",
+            indicator: 1,locked: 1,collaborators: [6, 8], observers: []
+        });
+        req.body.collaborators = [6]; 
+        await updateFormTest(req, res, next);
+        expect(next.firstCall.args[0]).to.be.instanceOf(ForbiddenError);
+        expect(next.firstCall.args[0].message).to.equal("Only the owner can remove collaborators and observers.");
+    });
+
     
     it('Updated form successfully.', async()=>{
         req.header.returns('validToken');

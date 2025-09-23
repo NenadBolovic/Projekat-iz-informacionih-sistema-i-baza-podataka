@@ -13,16 +13,3 @@ if (!db.getUser(process.env.MONGO_FORMS_USER)) {
 }
 
 
-/*db = db.getSiblingDB('formsquestionsdatabase');
-if (!db.getUser('formsquestions_user')) {
-  db.createUser({
-    user: "formsquestions_user",
-    pwd: "password_forms",
-    roles: [
-      {
-        role: "readWrite",
-        db: "formsquestionsdatabase"
-      }
-    ]
-  });
-}*/
