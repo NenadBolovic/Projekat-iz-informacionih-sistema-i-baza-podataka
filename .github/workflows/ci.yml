@@ -5,33 +5,40 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   build-and-start:
     runs-on: ubuntu-latest
 
     steps:
-    #  Checkout repository
+    #Checkout repository
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    #  Set up Docker
+    #Set up Docker
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    #  Build all services
+    # .env  GitHub secrets
+    - name: Create .env file from secret
+      run: |
+        echo "${{ secrets.ENV_FILE }}" > .env
+
+    #Build all services
     - name: Build Docker images
       run: docker compose build
 
-    #  Start all services in detached mode
+    #Start all services in detached mode
     - name: Start services
       run: docker compose up -d
 
-    # - name: Run tests
-    #   run: docker-compose exec -T users npm test
-    #   run: docker-compose exec -T answers npm test
-    #   run: docker-compose exec -T api-gateway npm test
 
-    #  Shutdown services and clean up
+    # - name: Run tests
+    #   run: docker compose exec -T users npm test
+    #   run: docker compose exec -T answers npm test
+    #   run: docker compose exec -T api-gateway npm test
+
+    # 6 Shutdown services and clean up
     - name: Shutdown services
       run: docker compose down
