@@ -147,11 +147,25 @@ export async function updateForm({axiosInstance,getFormByIdDB,updateFormDB}){
             }
             const authId=form.authId;
             const collaboratorsId=form.collaborators;
-            
+            const observersId=form.observers;
             if(userId!=authId && !(collaboratorsId.includes(userId))){
                 //return res.status(403).json({success: false, message: 'You do not have permission'});
                 throw new ForbiddenError('You do not have permission');
             }
+
+            if(collaboratorsId.includes(userId)){
+                let addCollab = collaborators.filter((e) => !collaboratorsId.includes(e));
+                let addObs=observers.filter((e) => !observersId.includes(e));
+                if (addCollab.length > 0 || addObs.length > 0) {
+                    throw new ForbiddenError("Only the owner can add collaborators and observers.");
+                }
+                let remCollab = collaboratorsId.filter((e) => !collaborators.includes(e));
+                let remObs=observersId.filter((e) => !observers.includes(e));
+                if (remCollab.length > 0 || remObs.length > 0) {
+                    throw new ForbiddenError("Only the owner can remove collaborators and observers.");
+                }
+            }
+
             const updateData={};
             if(name) updateData.name=name;
             if(description) updateData.description=description;
