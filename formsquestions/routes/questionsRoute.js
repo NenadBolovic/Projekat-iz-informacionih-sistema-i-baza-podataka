@@ -9,35 +9,35 @@ import { deleteFile } from '../utils/deleteFile.js';
 
 const router=express.Router();
 
-const addQuestionsHandler= await addQuestionsToForm({
+const addQuestionsHandler= addQuestionsToForm({
     axiosInstance: axios,
     getHighestQuestionIdByFormIdDB,
     addQuestions,
     getFormByIdDB,
 });
 
-const updateQuestionHandler= await updateQuestion({
+const updateQuestionHandler= updateQuestion({
     axiosInstance: axios,
     getQuestionById,
     updateQuestionDB,
     getFormByIdDB
-});
+    });
 
-const deleteQuestionHandler= await deleteQuestion({
+const deleteQuestionHandler= deleteQuestion({
     axiosInstance: axios,
     getQuestionById,
     getFormByIdDB,
     deleteQuestionDB
 });
 
-const moveQuestionHandler= await moveQuestion({
+const moveQuestionHandler= moveQuestion({
     axiosInstance: axios,
     moveQuestionUp,
     moveQuestionDown,
     getFormByIdDB
 });
 
-const cloneQuestionHandler=await cloneQuestion({
+const cloneQuestionHandler= cloneQuestion({
     axios,
     getFormByIdDB,
     cloneQuestionDB,
@@ -67,7 +67,6 @@ router.post('/addQuestions', uploadMiddleware, async (req,res,next) => {
 router.patch('/updateQuestion', uploadMiddleware, async(req,res,next)=>{
     try{
         req.body.updateData=JSON.parse(req.body.updateData);
-        
         await updateQuestionHandler(req,res,next);
     }catch(error){
         console.error("APP: Error in updating question",error);

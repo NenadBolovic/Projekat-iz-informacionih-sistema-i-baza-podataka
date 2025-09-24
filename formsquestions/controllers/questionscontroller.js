@@ -7,9 +7,10 @@ const AUTH_SERVICE_URL=process.env.AUTH_SERVICE_URL;
 const ANSWERS_SERVICE_URL=process.env.ANSWERS_SERVICE_URL;
 
 
-export async function addQuestionsToForm({axiosInstance,getHighestQuestionIdByFormIdDB,addQuestions,getFormByIdDB}){
+export function addQuestionsToForm({axiosInstance,getHighestQuestionIdByFormIdDB,addQuestions,getFormByIdDB}){
     return async(req,res,next) =>{
         try{
+            console.log("NALAZIM SE U ADDQUESTIONSTOFORM");
             const token = req.header('Authorization')?.replace('Bearer ', '');
             if (!token) {
                 //return res.status(403).json({ success: false, message: 'Access denied, no token provided' });
@@ -39,12 +40,8 @@ export async function addQuestionsToForm({axiosInstance,getHighestQuestionIdByFo
                 throw new ForbiddenError('You do not have permission');
             }
             const getOrderOfPreviousQuestion=await getHighestQuestionIdByFormIdDB(formId);
-            let existingQuestionCount;
-            if(getOrderOfPreviousQuestion==0){
-                existingQuestionCount=0;
-            }else{
-                existingQuestionCount=getOrderOfPreviousQuestion+1;
-            }
+            let existingQuestionCount=(getOrderOfPreviousQuestion != null) ? getOrderOfPreviousQuestion+1 : 0;
+            
             //const existingQuestionCount=(await getHighestQuestionIdByFormIdDB(formId))+1;
             const questionsWithFormId = questions.map((q,index) => ({
                 ...q, 
@@ -53,16 +50,19 @@ export async function addQuestionsToForm({axiosInstance,getHighestQuestionIdByFo
             }));
 
             if (req.files && req.files.length > 0) {
-                req.files.forEach((file) => {
+                req.files.forEach((file,i) => {
                     const { fieldname, path: filePath } = file;
             
                     if (fieldname.startsWith('questionImage-')) {
                         const questionIndex = parseInt(fieldname.split('-')[1], 10);
-            
-                        if (questionsWithFormId[questionIndex]) {
+                        console.log("QUESTION INDEX");
+                        console.log(questionIndex);
+                        console.log("QUESTION");
+                        console.log(questionsWithFormId[i]);
+                        if (questionsWithFormId[i]) {
                             //questionsWithFormId[questionIndex].questionImage=filePath;
-                            questionsWithFormId[questionIndex].questionImage=`/images/${file.filename}`;
-                            console.log(`Atached image to questionId ${questionsWithFormId[questionIndex]}: ${filePath}`);
+                            questionsWithFormId[i].questionImage=`/images/${file.filename}`;
+                            console.log(`Atached image to questionId ${questionsWithFormId[i]}: ${filePath}`);
                         } else {
                             console.error(`No matching question found for questionImage`);
                         }
@@ -91,9 +91,10 @@ export async function addQuestionsToForm({axiosInstance,getHighestQuestionIdByFo
 }
 
 
-export async function updateQuestion({axiosInstance,getQuestionById,updateQuestionDB,getFormByIdDB}){
+export function updateQuestion({axiosInstance,getQuestionById,updateQuestionDB,getFormByIdDB}){
     return async (req,res,next) => {
         try{
+            console.log("NALAZIM SE U UPDATEQUESTIONS");
             const token = req.header('Authorization')?.replace('Bearer ', '');
             if (!token) {
                 
@@ -166,7 +167,7 @@ export async function updateQuestion({axiosInstance,getQuestionById,updateQuesti
     }
 }
 
-export async function deleteQuestion({axiosInstance,getQuestionById,getFormByIdDB,deleteQuestionDB}){
+export function deleteQuestion({axiosInstance,getQuestionById,getFormByIdDB,deleteQuestionDB}){
     return async(req,res,next) =>{
         try{
             const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -236,7 +237,7 @@ export async function deleteQuestion({axiosInstance,getQuestionById,getFormByIdD
     }
 }
 
-export async function moveQuestion({axiosInstance,moveQuestionUp,moveQuestionDown,getFormByIdDB}){
+export function moveQuestion({axiosInstance,moveQuestionUp,moveQuestionDown,getFormByIdDB}){
     return async(req,res,next)=>{
         try{
             const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -276,7 +277,7 @@ export async function moveQuestion({axiosInstance,moveQuestionUp,moveQuestionDow
 }
 
 
-export async function cloneQuestion({axios,getFormByIdDB,cloneQuestionDB,deleteQuestionDB}){
+export function cloneQuestion({axios,getFormByIdDB,cloneQuestionDB,deleteQuestionDB}){
     return async(req,res,next)=>{
         try{
             const token = req.header('Authorization')?.replace('Bearer ', '');
