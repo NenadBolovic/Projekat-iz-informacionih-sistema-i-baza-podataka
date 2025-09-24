@@ -8,7 +8,7 @@ export async function deleteFile(filePath) {
     try {
         const filename = path.basename(filePath);
         const absolutePath = path.join('/usr/src/app/uploads', filename);
-
+        console.trace("DELETE FILE POZVAN ZA:", absolutePath);
         await fs.promises.unlink(absolutePath);
         console.log(`File deleted: ${absolutePath}`);
     } catch (error) {

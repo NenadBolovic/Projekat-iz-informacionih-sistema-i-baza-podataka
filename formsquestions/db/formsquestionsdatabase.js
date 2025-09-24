@@ -193,7 +193,7 @@ export async function getHighestQuestionIdByFormIdDB(formIdParam){
             .sort({questionId: -1})
             .limit(1)
             .exec();
-        return highestQuestion.length > 0 ? highestQuestion[0].questionId : 0;
+        return highestQuestion.length > 0 ? highestQuestion[0].questionId : null;
     }catch(err){
         console.error("Error fetching the highest questionId: ", err);
         throw err;
