@@ -284,7 +284,7 @@ function FormAnalytics() {
                     <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center' }}>
                       <img
                         src={imgSrc}
-                        alt="Slika pitanja"
+                        alt="Slika nije ucitana"
                         loading="lazy"
                         style={{
                           maxWidth: 220,

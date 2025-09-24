@@ -1,136 +1,274 @@
-/* Osnovni stil za navbar */
-.nav {
-  background: #C3A1F6;
-  height: 70px;
-  display: flex;
-  justify-content: space-between;  /* Razmeštaj sa razmakom između sekcija */
-  align-items: center;
-  padding: 0.5rem;
-  z-index: 10;
-  position: relative;
-  margin-bottom: 10px;
+/* Root nav container */
+.nav-root {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg,#5e2a9b 0%, #7b3fc4 45%, #9146d8 100%);
+  box-shadow: 0 4px 18px -4px rgba(54,0,116,0.5), 0 2px 6px rgba(60,0,130,0.4);
+  border-bottom: 1px solid rgba(255,255,255,0.15);
 }
 
-/* Sekcija sa logom i menijem */
-.logo {
+.nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 10px clamp(10px, 3vw, 26px);
   display: flex;
   align-items: center;
+  gap: 2.2rem;
+  justify-content: space-between;
+  min-height: 60px;
+}
+
+/* Left cluster */
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Brand */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   text-decoration: none;
-  color: white;
+  font-weight: 600;
+  letter-spacing: .5px;
+  font-size: 18px;
+  color: #fff;
+  position: relative;
 }
 
-.form-icon {
-  height: 40px;
-  margin-right: 10px;
+.brand-icon {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
 }
 
-.info {
-  font-size: 1.5rem;
-  font-weight: bold;
+.brand-text {
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,.4);
 }
 
-/* Ikona menija */
-.menu-icon {
-  color: white;
-  margin-right: 10px;
+.brand-pill {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(255,255,255,.18);
+  backdrop-filter: blur(4px);
+  font-weight: 600;
+  letter-spacing: .5px;
 }
 
-/* Središnji prostor za pretragu */
+.brand:hover .brand-pill {
+  background: rgba(255,255,255,.28);
+}
+
+/* Links */
+.main-links {
+  display: flex;
+  gap: 1.2rem;
+}
+
+.nav-link {
+  position: relative;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .3px;
+  color: rgba(255,255,255,.78);
+  padding: 6px 4px;
+  transition: color .25s, transform .25s;
+}
+
+.nav-link:hover {
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.nav-link.active {
+  color: #fff;
+  font-weight: 600;
+}
+
+.nav-link.active::after,
+.nav-link:hover::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg,#ffe9ff,#ffffff);
+  box-shadow: 0 0 6px rgba(255,255,255,0.7);
+}
+
+/* Search */
 .searchBox {
   display: flex;
   align-items: center;
-  justify-content: center;  /* Centriranje pretrage */
-  gap: 8px;
-  background: #2f3640;
-  border-radius: 50px;
-  position: relative;
-  max-width: 300px;
-  width: 100%;  /* Zauzima preostali prostor */
+  gap: 4px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: 4px 10px;
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+  transition: background .25s, border-color .3s;
+  max-width: 270px;
+  flex: 1;
 }
 
-/* Stil za dugme pretrage */
-.searchButton {
-  color: white;
-  position: absolute;
-  right: 8px;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: var(--gradient-2, linear-gradient(90deg, #2AF598 0%, #009EFD 100%));
-  border: 0;
-  display: inline-block;
-  transition: all 300ms cubic-bezier(.23, 1, 0.32, 1);
+.searchBox:focus-within {
+  background: rgba(255,255,255,0.25);
+  border-color: rgba(255,255,255,0.5);
 }
 
-/* Hover efekat za dugme */
-.searchButton:hover {
-  background-color: #1A1A1A;
-  box-shadow: rgba(0, 0, 0, 0.5) 0 10px 20px;
-  transform: translateY(-3px);
-}
-
-/* Input za pretragu */
 .searchInput {
   border: none;
-  background: none;
   outline: none;
-  color: white;
-  font-size: 15px;
-  padding: 24px 46px 24px 26px;
-}
-
-/* Linkovi u navbar-u */
-.nav-link {
+  background: transparent;
+  font-size: 14px;
   color: #fff;
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  padding: 0 1rem;
-  height: 100%;
+  width: 100%;
+  font-weight: 400;
+}
+
+.searchInput::placeholder {
+  color: rgba(255,255,255,.65);
+  font-weight: 300;
+}
+
+.searchButton {
+  border: none;
+  background: rgba(255,255,255,.22);
+  color: #fff;
   cursor: pointer;
+  width: 36px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: background .25s, transform .25s;
 }
 
-/* Aktivni link */
-.nav-link.active {
-  color: #15cdfc;
+.searchButton:hover {
+  background: rgba(255,255,255,.35);
+  transform: scale(1.04);
 }
 
-/* Avatar za menadžment korisnika */
-.header-avatar {
+/* Right cluster */
+.nav-right {
   display: flex;
   align-items: center;
+  gap: 1.4rem;
 }
 
-/* MUI Menu linkovi */
-.menu-link {
+.new-form-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   text-decoration: none;
-  color: black;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .4px;
+  color: #35104d;
+  background: linear-gradient(135deg,#fff 0%, #ffeaff 100%);
+  padding: 8px 14px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px -4px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,.25);
+  position: relative;
+  overflow: hidden;
+  transition: transform .3s, box-shadow .3s;
 }
 
-/* Pretraga u navbaru - prikazivanje samo na početnoj stranici */
-@media screen and (max-width: 768px) {
+.new-form-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(150,70,255,0.25), transparent 60%);
+  opacity: 0;
+  transition: opacity .4s;
+}
+
+.new-form-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px -6px rgba(0,0,0,0.5), 0 3px 10px rgba(0,0,0,.35);
+}
+
+.new-form-btn:hover::after {
+  opacity: 1;
+}
+
+.plus-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* User chip (text + avatar menu trigger) */
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .nav-inner {
+    gap: 1rem;
+  }
+  .main-links {
+    gap: .9rem;
+  }
+  .new-form-btn {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
   .searchBox {
-    max-width: 100%;
+    max-width: 220px;
   }
 }
 
-
-.user-info {
-  display: flex;
-  align-items: center; /* Aligns items vertically in the center */
-  gap: 10px; /* Adjusts space between Naziv and Avatar */
-  flex-direction: row; /* Ensures they are in a row */
+@media (max-width: 600px) {
+  .nav-inner {
+    flex-wrap: wrap;
+    padding: 10px 14px 14px;
+  }
+  .nav-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .main-links {
+    display: none; /* ili napravi burger meni kasnije */
+  }
+  .searchBox {
+    order: 3;
+    width: 100%;
+    max-width: none;
+  }
+  .nav-right {
+    margin-left: auto;
+  }
+  .new-form-btn span {
+    display: none; /* ostavi samo ikonu */
+  }
+  .new-form-btn {
+    padding: 8px 10px;
+  }
 }
 
-.Naziv {
-  font-weight: bold;
-  font-size: 16px;
-  white-space: nowrap; /* Prevents text from wrapping */
-}
-
-
-.small-plus-icon {
-  width: 20px;
-  height: 20px;
-  filter: invert(11%) sepia(55%) saturate(4054%) hue-rotate(186deg) brightness(95%) contrast(90%);
+/* High contrast focus */
+.nav-link:focus-visible,
+.new-form-btn:focus-visible,
+.searchInput:focus-visible,
+.searchButton:focus-visible {
+  outline: 2px solid #ffeaff;
+  outline-offset: 3px;
+  border-radius: 6px;
 }
