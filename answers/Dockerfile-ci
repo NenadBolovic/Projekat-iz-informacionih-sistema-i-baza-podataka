@@ -1,0 +1,17 @@
+FROM node:16
+
+WORKDIR /answersapp
+
+# prvo package fajlovi
+COPY package*.json ./
+
+# instaliraj dependency-je
+RUN npm install
+RUN npm install -g cross-env
+
+# kopiraj ostatak koda
+COPY . .
+
+# podrazumevana komanda za testiranje
+CMD ["npm", "test"]
+

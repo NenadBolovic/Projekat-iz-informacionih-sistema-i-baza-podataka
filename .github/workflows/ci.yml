@@ -8,37 +8,167 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-start:
+  # ========== UNIT TESTOVI ==========  
+  answers-unit:
     runs-on: ubuntu-latest
-
     steps:
-    #Checkout repository
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build Answers (unit)
+        run: docker build -f answers/Dockerfile-ci -t answers-test ./answers
+      - name: Run Answers tests (unit)
+        run: docker run --rm answers-test
 
-    #Set up Docker
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+  authentication-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build Authentication (unit)
+        run: docker build -f authentication/Dockerfile-ci -t authentication-test ./authentication
+      - name: Run Authentication tests (unit)
+        run: docker run --rm authentication-test
 
-    # .env  GitHub secrets
-    - name: Create .env file from secret
-      run: |
-        echo "${{ secrets.ENV_FILE }}" > .env
+  users-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build Users (unit)
+        run: docker build -f users/Dockerfile-ci -t users-test ./users
+      - name: Run Users tests (unit)
+        run: docker run --rm users-test
 
-    #Build all services
-    - name: Build Docker images
-      run: docker compose build
+  formsquestions-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build FormsQuestions (unit)
+        run: docker build -f formsquestions/Dockerfile-ci -t formsquestions-test ./formsquestions
+      - name: Run FormsQuestions tests (unit)
+        run: docker run --rm formsquestions-test
 
-    #Start all services in detached mode
-    - name: Start services
-      run: docker compose up -d
+  front-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build Front (unit)
+        run: docker build -f front/Dockerfile-ci -t front-test ./front
+      - name: Run Front tests (unit)
+        run: docker run --rm front-test
 
+  # ========== BUILD & PUSH SLICE NA DOCKER HUB ==========
+  answers-push:
+    runs-on: ubuntu-latest
+    needs: [answers-unit]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & push Answers image
+        run: |
+          docker build -f answers/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/answers:latest ./answers
+          docker push ${{ secrets.DOCKER_USERNAME }}/answers:latest
 
-    # - name: Run tests
-    #   run: docker compose exec -T users npm test
-    #   run: docker compose exec -T answers npm test
-    #   run: docker compose exec -T api-gateway npm test
+  authentication-push:
+    runs-on: ubuntu-latest
+    needs: [authentication-unit]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & push Authentication image
+        run: |
+          docker build -f authentication/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/authentication:latest ./authentication
+          docker push ${{ secrets.DOCKER_USERNAME }}/authentication:latest
 
-    # 6 Shutdown services and clean up
-    - name: Shutdown services
-      run: docker compose down
+  users-push:
+    runs-on: ubuntu-latest
+    needs: [users-unit]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & push Users image
+        run: |
+          docker build -f users/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/users:latest ./users
+          docker push ${{ secrets.DOCKER_USERNAME }}/users:latest
+
+  formsquestions-push:
+    runs-on: ubuntu-latest
+    needs: [formsquestions-unit]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & push FormsQuestions image
+        run: |
+          docker build -f formsquestions/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/formsquestions:latest ./formsquestions
+          docker push ${{ secrets.DOCKER_USERNAME }}/formsquestions:latest
+
+  api-gateway-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & push API Gateway image
+        run: |
+          docker build -f api-gateway/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/api-gateway:latest ./api-gateway
+          docker push ${{ secrets.DOCKER_USERNAME }}/api-gateway:latest
+
+  front-push:
+    runs-on: ubuntu-latest
+    needs: [front-unit]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & push Front image
+        run: |
+          docker build -f front/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/front:latest ./front
+          docker push ${{ secrets.DOCKER_USERNAME }}/front:latest
+
+  # ========== QA / UI / API TESTOVI ==========
+  qa-tests:
+    runs-on: ubuntu-latest
+    needs: [answers-push, authentication-push, users-push, formsquestions-push, front-push]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Create .env from secrets
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+      - name: Build all services (QA)
+        run: docker compose build
+      - name: Start services
+        run: docker compose up -d
+      # - name: Run QA / Selenium tests
+      #   run: echo "Ovde ubaciti Selenium/UI/API testove kad budu spremni"
+      # - name: Shutdown services
+      #   run: docker compose down
