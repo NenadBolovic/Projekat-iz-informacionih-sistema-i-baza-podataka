@@ -338,10 +338,17 @@ export async function exportQuestionsAndAnswers({axios,getAnswersOfFormDB}){
                         const question= questions.find(q=> q.questionId===a.questionId);
                         const questionText=question.questionText;
                         const {userId,formId,questionId,answer,answerImage,id}=a;
+                        let answerValue = a.answer;
+
+                        
+                        if (Array.isArray(answerValue)) {
+                            answerValue = answerValue.join(', ');
+                        }
+
                         return {
                             username: user ? user.username : "Nepoznati",
                             questionText,
-                            answer,
+                            answer: answerValue,
                         };
                     });
                     const downloadPath=createExcelFile(formId,answersWithUsernames);

@@ -8,7 +8,6 @@ services:
       - "3005:3005"
     volumes:
       - ./api-gateway:/api-gatewayapp
-      - ./downloads:/api-gatewayapp/downloads
     networks:
       - app-network
 
@@ -40,7 +39,6 @@ services:
       - ./.env
     volumes:
       - ./answers:/answersapp
-      #- /answersapp/node_modules
       - answers-images:/usr/src/app/uploads  
       - ./downloads:/answersapp/downloads
     networks:
@@ -74,7 +72,6 @@ services:
       - "3003:3003"
     env_file:
       - ./.env
-      #- ./authentication/.env
     networks:
       - app-network
 
@@ -85,8 +82,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    #env_file:
-    #  - ./front/.env
     networks:
       - app-network
     depends_on:
@@ -117,7 +112,6 @@ services:
     volumes:
       - users-db-data:/var/lib/mysql
       - ./init-usersdb.sql:/docker-entrypoint-initdb.d/init-usersdb.sql
-      #- ./mysql-scripts/users:/docker-entrypoint-initdb.d 
     ports:
       - "3004:3306"
     networks:

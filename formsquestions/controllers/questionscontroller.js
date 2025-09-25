@@ -55,10 +55,6 @@ export function addQuestionsToForm({axiosInstance,getHighestQuestionIdByFormIdDB
             
                     if (fieldname.startsWith('questionImage-')) {
                         const questionIndex = parseInt(fieldname.split('-')[1], 10);
-                        console.log("QUESTION INDEX");
-                        console.log(questionIndex);
-                        console.log("QUESTION");
-                        console.log(questionsWithFormId[i]);
                         if (questionsWithFormId[i]) {
                             //questionsWithFormId[questionIndex].questionImage=filePath;
                             questionsWithFormId[i].questionImage=`/images/${file.filename}`;
