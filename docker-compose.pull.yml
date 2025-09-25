@@ -1,0 +1,106 @@
+services:
+  api-gateway:
+    container_name: api-gateway
+    image: Bureknadnumora12/api-gateway:latest
+    ports:
+      - "3005:3005"
+    networks:
+      - app-network
+
+  formsquestions:
+    container_name: formsquestions
+    image: Bureknadnumora12/formsquestions:latest
+    ports:
+      - "3006:3006"
+    env_file:
+      - ./.env
+    networks:
+      - app-network
+    depends_on:
+      - mongo-db
+
+  answers:
+    container_name: answers
+    image: Bureknadnumora12/answers:latest
+    ports: 
+      - "3002:3002"
+    env_file:
+      - ./.env
+    networks:
+      - app-network
+    depends_on:
+      - mongo-db
+
+  users:
+    container_name: users
+    image: Bureknadnumora12/users:latest
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./.env
+    networks:
+      - app-network
+    depends_on:
+      - users-db
+
+  authentication:
+    container_name: authentication
+    image: Bureknadnumora12/authentication:latest
+    ports:
+      - "3003:3003"
+    env_file:
+      - ./.env
+    networks:
+      - app-network
+
+  frontend:
+    container_name: frontend
+    image: Bureknadnumora12/front:latest
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    depends_on:
+      - api-gateway
+
+  mongo-db:
+    container_name: mongo-db
+    image: mongo:6
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-db-data:/data/db
+      - ./init-formsquestions.js:/docker-entrypoint-initdb.d/init-formsquestions.js:ro
+      - ./init-answers.js:/docker-entrypoint-initdb.d/init-answers.js:ro
+    env_file:
+      - ./.env
+    networks:
+      - app-network  
+
+  users-db:
+    container_name: users-db
+    image: mysql:8
+    env_file:
+      - ./.env
+    volumes:
+      - users-db-data:/var/lib/mysql
+      - ./init-usersdb.sql:/docker-entrypoint-initdb.d/init-usersdb.sql
+    ports:
+      - "3004:3306"
+    networks:
+      - app-network
+    restart: always
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-db-data:  
+  users-db-data:
+  formsquestions-images:
+  answers-db-data:
+  answers-images:

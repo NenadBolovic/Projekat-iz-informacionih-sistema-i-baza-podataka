@@ -164,8 +164,10 @@ jobs:
         uses: docker/setup-buildx-action@v2
       - name: Create .env from secrets
         run: echo "${{ secrets.ENV_FILE }}" > .env
-      - name: Build all services (QA)
-        run: docker compose build
+      - name: Pull all services
+        run: docker compose pull
+      #- name: Build all services (QA)
+      #  run: docker compose build
       - name: Start services
         run: docker compose up -d
       # - name: Run QA / Selenium tests
