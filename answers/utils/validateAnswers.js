@@ -22,7 +22,16 @@ export const validateAnswer = (questionType, value) => {
 export const validateAnswers = (answers) => {
     let allValid = true; 
     answers.forEach((answer) => {
-        const { questionType, answer: answerValue, questionId } = answer;
+        const { questionType, answer: answerValue, questionId,required } = answer;
+        if (required) {
+            const isEmpty = answerValue === null || answerValue === undefined || answerValue === '' ||
+                (Array.isArray(answerValue) && answerValue.length === 0);
+            if (isEmpty) {
+                allValid = false;
+                console.error(`Answer is required for questionId ${questionId}`);
+                return; 
+            }
+        }
         if (!validateAnswer(questionType, answerValue)) {
             allValid = false;
             console.error(`Invalid answer format for questionId ${questionId} with type ${questionType}`);

@@ -321,7 +321,7 @@ export async function deleteForm({axiosInstance,getFormByIdDB,deleteQuestionDB,d
             }
             
 
-            if(userId!=authId &&  !(!Array.isArray(collaboratorsId) && collaboratorsId.includes(userId))){
+            if(userId!=authId && !collaboratorsId.includes(userId)){
                 
                 throw new ForbiddenError('User is neither author or collaborator.')
                 //return res.status(403).json({success: false, message: 'You do not have permission'});
