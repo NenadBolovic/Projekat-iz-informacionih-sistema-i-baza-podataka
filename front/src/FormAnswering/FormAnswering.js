@@ -28,35 +28,25 @@ function FormAnsweringPage() {
   const [error, setError] = useState("");
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
 
-  // Base for serving images via API
   const formsApiBase = "http://localhost:3005/api/formsquestions";
 
-  // Resolves various stored formats to a fetchable image URL:
-  // - If absolute http(s) URL, return as is.
-  // - If path contains "/images/<filename>", hit /api/formsquestions/images/<filename>
-  // - Otherwise, prefix with /api/formsquestions and keep the path.
   const resolveQuestionImageSrc = (imgPath) => {
     if (!imgPath) return null;
     if (/^https?:\/\//i.test(imgPath)) return imgPath;
-
-    // Try to extract filename from ".../images/<filename>"
     const match = imgPath.match(/(?:^|\/)images\/([^/?#]+)/i);
     if (match && match[1]) {
       return `${formsApiBase}/images/${encodeURIComponent(match[1])}`;
     }
-
-    // Fallback: treat as API-relative path
     return `${formsApiBase}${imgPath.startsWith("/") ? "" : "/"}${imgPath}`;
   };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    setIsGuest(!token); // ako nema tokena, gost/anonimno
+    setIsGuest(!token);
 
-    const urlSegments = window.location.pathname.split("/");
-    const formId = urlSegments[urlSegments.length - 1];
-
+    const formId = window.location.pathname.split("/").pop();
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
     fetch(`http://localhost:3005/api/formsquestions/forms/${formId}`, {
@@ -71,9 +61,7 @@ function FormAnsweringPage() {
       .then((data) => {
         if (data.form || data._id) {
           const formDataObj = data.form || data;
-          setFormData(formDataObj);
-
-          // Initialize answers
+            setFormData(formDataObj);
           const initialAnswers = {};
           if (formDataObj.questions) {
             formDataObj.questions.forEach((q) => {
@@ -87,7 +75,6 @@ function FormAnsweringPage() {
                 initialAnswers[q._id] = q.numericAttributes.min;
               }
             });
-
             setAnswers(initialAnswers);
           }
         } else {
@@ -97,60 +84,97 @@ function FormAnsweringPage() {
       .catch((error) => setError(error.message));
   }, []);
 
+  const isAnswerProvided = (question, value) => {
+    const type = question.questionType;
+    if (type === "short-text" || type === "long-text") {
+      return typeof value === "string" && value.trim().length > 0;
+    }
+    if (type === "multiple-choice-single") {
+      return typeof value === "string" && value !== "";
+    }
+    if (type === "multiple-choice-multiple") {
+      return Array.isArray(value) && value.length > 0;
+    }
+    if (type === "numeric") {
+      return value !== undefined && value !== null && value !== "";
+    }
+    if (type === "date" || type === "time") {
+      return typeof value === "string" && value !== "";
+    }
+    return true;
+  };
+
   const handleAnswerChange = (questionId, value, questionType, optionText) => {
     let updatedValue = value;
-
     if (questionType === "numeric") {
       updatedValue = value === "" ? 0 : Number(value);
-      if (isNaN(updatedValue)) {
-        updatedValue = 0;
-      }
+      if (isNaN(updatedValue)) updatedValue = 0;
       setAnswers((prev) => ({ ...prev, [questionId]: updatedValue }));
     } else if (questionType === "multiple-choice-multiple") {
       const currentSelections = [...(answers[questionId] || [])];
-
       if (value) {
         if (!currentSelections.includes(optionText)) {
           currentSelections.push(optionText);
         }
       } else {
         const index = currentSelections.indexOf(optionText);
-        if (index > -1) {
-          currentSelections.splice(index, 1);
-        }
+        if (index > -1) currentSelections.splice(index, 1);
       }
-
       setAnswers((prev) => ({ ...prev, [questionId]: currentSelections }));
     } else {
       setAnswers((prev) => ({ ...prev, [questionId]: value }));
     }
+
+    // Ako je ranije postojao error i sad je odgovor popunjen – ukloni error
+    setValidationErrors((prev) => {
+      if (!prev[questionId]) return prev;
+      const newVal = { ...prev };
+      delete newVal[questionId];
+      return newVal;
+    });
   };
 
   const handleSubmit = () => {
     if (!formData || !formData.questions) return;
 
-    const token = localStorage.getItem("token");
+    const newErrors = {};
+    formData.questions.forEach((q) => {
+      if (q.required === true) {
+        const currentVal = answers[q._id];
+        if (!isAnswerProvided(q, currentVal)) {
+          newErrors[q._id] = "This question is required.";
+        }
+      }
+    });
+    if (Object.keys(newErrors).length > 0) {
+      setValidationErrors(newErrors);
+      const firstId = Object.keys(newErrors)[0];
+      const elem = document.querySelector(`[data-question-id="${firstId}"]`);
+      if (elem) {
+        elem.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    } else {
+      setValidationErrors({});
+    }
 
+    const token = localStorage.getItem("token");
     const formId = window.location.pathname.split("/").pop();
     const answersData = {
       formId,
       answers: formData.questions.map((q, index) => {
         let answerValue =
           answers[q._id] !== undefined ? answers[q._id] : "";
-
         if (
           q.questionType === "multiple-choice-multiple" &&
           Array.isArray(answerValue)
         ) {
           answerValue = answerValue.join(", ");
         }
-
-        // Use stable questionId if available, otherwise fallback to array index
         const stableQuestionId =
           typeof q.questionId === "number" && !Number.isNaN(q.questionId)
             ? q.questionId
             : index;
-
         return {
           questionId: stableQuestionId,
           questionType: q.questionType,
@@ -161,7 +185,6 @@ function FormAnsweringPage() {
 
     const formDataToSubmit = new FormData();
     formDataToSubmit.append("answerData", JSON.stringify(answersData));
-
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
     fetch("http://localhost:3005/api/answers/answers", {
@@ -171,11 +194,9 @@ function FormAnsweringPage() {
     })
       .then((res) => {
         if (!res.ok) {
-          return res
-            .json()
-            .then((err) => {
-              throw new Error(err.message || "Submission failed");
-            });
+          return res.json().then((err) => {
+            throw new Error(err.message || "Submission failed");
+          });
         }
         return res.json();
       })
@@ -184,7 +205,7 @@ function FormAnsweringPage() {
           setIsSuccessDialogOpen(true);
           setError("");
         } else {
-          setError(data.message || "Submission failed.");
+            setError(data.message || "Submission failed.");
         }
       })
       .catch((err) => setError(err.message));
@@ -208,15 +229,11 @@ function FormAnsweringPage() {
       question.numericAttributes?.step !== undefined
         ? question.numericAttributes.step
         : 1;
-
     const currentValue =
       answers[question._id] !== undefined ? answers[question._id] : min;
 
     return (
-      <Paper
-        elevation={0}
-        sx={{ p: 2, bgcolor: "background.paper", borderRadius: "8px" }}
-      >
+      <Paper elevation={0} sx={{ p: 2, bgcolor: "background.paper", borderRadius: "8px" }}>
         <Typography gutterBottom>
           Selected value: <strong>{currentValue}</strong>
         </Typography>
@@ -224,11 +241,7 @@ function FormAnsweringPage() {
           <Slider
             value={currentValue}
             onChange={(e, newValue) =>
-              handleAnswerChange(
-                question._id,
-                newValue,
-                question.questionType
-              )
+              handleAnswerChange(question._id, newValue, question.questionType)
             }
             valueLabelDisplay="auto"
             step={step}
@@ -272,19 +285,39 @@ function FormAnsweringPage() {
           {formData.questions.map((question) => {
             const imgSrc = resolveQuestionImageSrc(question.questionImage);
             return (
-              <div key={question._id} className="question-form">
-                <p>{question.questionText}</p>
+              <div
+                key={question._id}
+                className="question-form"
+                data-question-id={question._id}
+                style={{
+                  border: validationErrors[question._id]
+                    ? "1px solid #d32f2f"
+                    : undefined,
+                  borderRadius: validationErrors[question._id] ? 8 : undefined,
+                  padding: validationErrors[question._id] ? 12 : undefined,
+                  background: validationErrors[question._id]
+                    ? "#fff5f5"
+                    : undefined,
+                  transition: "border-color .25s, background .25s",
+                }}
+              >
+                <p style={{ marginBottom: 8 }}>{question.questionText}</p>
 
-                {/* Render question image if available, via API endpoint */}
                 {imgSrc && (
                   <img
                     src={imgSrc}
                     alt="Slika pitanja"
                     loading="lazy"
-                    style={{ maxWidth: "100%", maxHeight: 200, borderRadius: 6, marginBottom: 8 }}
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: 200,
+                      borderRadius: 6,
+                      marginBottom: 8,
+                    }}
                     onError={(e) => {
-                      // Fallback to direct API + original path if the images/<filename> route fails
-                      const fallback = `${formsApiBase}${question.questionImage?.startsWith("/") ? "" : "/"}${question.questionImage || ""}`;
+                      const fallback = `${formsApiBase}${
+                        question.questionImage?.startsWith("/") ? "" : "/"
+                      }${question.questionImage || ""}`;
                       if (fallback && e.currentTarget.src !== fallback) {
                         e.currentTarget.src = fallback;
                       }
@@ -304,6 +337,7 @@ function FormAnsweringPage() {
                         question.questionType
                       )
                     }
+                    error={!!validationErrors[question._id]}
                   />
                 )}
 
@@ -321,11 +355,16 @@ function FormAnsweringPage() {
                         question.questionType
                       )
                     }
+                    error={!!validationErrors[question._id]}
                   />
                 )}
 
                 {question.questionType === "multiple-choice-single" && (
-                  <FormControl component="fieldset" fullWidth>
+                  <FormControl
+                    component="fieldset"
+                    fullWidth
+                    error={!!validationErrors[question._id]}
+                  >
                     <RadioGroup
                       value={answers[question._id] || ""}
                       onChange={(e) =>
@@ -349,7 +388,11 @@ function FormAnsweringPage() {
                 )}
 
                 {question.questionType === "multiple-choice-multiple" && (
-                  <FormControl component="fieldset" fullWidth>
+                  <FormControl
+                    component="fieldset"
+                    fullWidth
+                    error={!!validationErrors[question._id]}
+                  >
                     <FormGroup>
                       {question.options.map((option, index) => (
                         <FormControlLabel
@@ -392,6 +435,7 @@ function FormAnsweringPage() {
                         question.questionType
                       )
                     }
+                    error={!!validationErrors[question._id]}
                   />
                 )}
 
@@ -407,18 +451,34 @@ function FormAnsweringPage() {
                         question.questionType
                       )
                     }
+                    error={!!validationErrors[question._id]}
                   />
                 )}
 
-                {question.required === 1 && (
-                  <Typography variant="caption" color="error">
+                {question.required === true && (
+                  <Typography
+                    variant="caption"
+                    color={validationErrors[question._id] ? "error" : "text.secondary"}
+                    sx={{ display: "block", mt: 0.5 }}
+                  >
                     * Required
+                  </Typography>
+                )}
+
+                {validationErrors[question._id] && (
+                  <Typography
+                    variant="caption"
+                    color="error"
+                    sx={{ display: "block", fontWeight: 500, mt: 0.3 }}
+                  >
+                    {validationErrors[question._id]}
                   </Typography>
                 )}
               </div>
             );
           })}
         </div>
+
         <Button
           variant="contained"
           color="success"
