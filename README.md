@@ -7,6 +7,6 @@
 
 Članovi tima Ctrl Alt Elite:  
 Nenad Bolović 644/2021 - *frontend engineer*  
-Luka Rafailović 639/2021 - *DevOps engineer*
+Luka Rafailović 639/2021 - *DevOps engineer* 
 Viktor Radosavljević 604/2021 - *backend engineer*  
 Milan Nedić 608/2021 - *quality assurance engineer*  
