@@ -248,7 +248,7 @@ export async function sendUsersAnswers({axios,addUserAnswers}) {
                     const transformedAnswer = {
                         ...answer,
                         questionType: questionsTypes[index],
-                        required: questionsRequired[index] === 1,
+                        required: questionsRequired[index],
                     };
                     if (questionsTypes[index] === 'multiple-choice-multiple' && 
                         typeof transformedAnswer.answer === 'string') {
