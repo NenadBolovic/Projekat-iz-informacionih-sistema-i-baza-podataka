@@ -25,21 +25,26 @@ npm install
 cd ../authentication
 npm install
 cd ../api-gateway
-npm install```
+npm install
+```
 b)Pokrenuti build slika
 ```
-docker compose build```
+docker compose build
+```
 c)Pokrenuti kontejnere
 ```
-docker compose up -d```
+docker compose up -d
+```
 
 2)Korišćenje slika sa Docker Hub-a
 a)Pull gotovih slika
 ```
-docker compose -f docker-compose.pull.yml pull```
+docker compose -f docker-compose.pull.yml pull
+```
 b)Pokretanje kontejnera
 ```
-docker compose -f docker-compose.pull.yml up -d```
+docker compose -f docker-compose.pull.yml up -d
+```
 
 
 
