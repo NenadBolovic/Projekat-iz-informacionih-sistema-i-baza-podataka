@@ -1,0 +1,99 @@
+import requests
+import uuid
+import mysql.connector
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
+
+konekcija = mysql.connector.connect(
+    host="localhost",         
+    port=3004,
+    user="pisbp",
+    password="pisbp",
+    database="users"
+)
+
+ph = PasswordHasher()
+
+
+#definisanje funkcija
+
+def kreacija_jsona():
+    #unikatan username i imejl
+    username = uuid.uuid4().hex
+    email = f"{uuid.uuid4().hex}@gmail.com"
+    sadrzaj = {
+        "firstname": "ime",
+        "lastname": "prezime",
+        "username": username,
+        "password": "sifra",
+        "email": email
+    }
+
+    return sadrzaj
+
+def brisanje():
+    url2 = "http://localhost:3005/api/authentication/login"
+    sifra = "sifra"
+    logovanje = requests.post(url2, json = {"username" : username, "password" : sifra})
+    global token
+    token = logovanje.json().get("token")
+    Header = {
+        "Authorization" : f"Bearer {token}"
+    }
+
+    url5 = "http://localhost:3005/api/users/users/delete"
+
+    brisanjekorisnika = requests.delete(url5, headers=Header)
+
+#testovi
+
+
+def test_kreacija_R_nepostojeci():
+    novi_korisnik = kreacija_jsona()
+    global mejl
+    global username
+    mejl = novi_korisnik["email"]
+    username = novi_korisnik["username"]
+
+    url1 = 'http://localhost:3005/api/authentication/register'
+    problem = requests.post(url1, json = novi_korisnik
+    )
+
+    postojanje = problem.status_code
+    assert postojanje == 201
+
+def test_citanje_R_nepostojeci():
+    #prvo login pa onda search
+    #znam da postoji ali iz nekog razloga ne moze biti pretrazeno
+
+    url2 = "http://localhost:3005/api/authentication/login"
+    sifra = "sifra"
+    logovanje = requests.post(url2, json = {"username" : username, "password" : sifra})
+    global token
+    token = logovanje.json().get("token")
+
+    url3 = "http://localhost:3005/api/users/users/search/" + str("NE_POSTOJIM"+uuid.uuid4().hex)
+
+    global Header
+    Header = {
+        "Authorization" : f"Bearer {token}"
+    }
+
+
+
+    pretraga = requests.get(url3, headers=Header)
+
+    brisanje()
+    #barem znam da brisanje radi...
+
+    postojanje2 = True  
+    #print("\n",postojanje2)
+    if pretraga.json()["users"]==[]:
+        postojanje2 = False
+        #print("\n", postojanje2)
+        #ovde definitivno radi
+
+    #print(pretraga.json())
+    #print(pretraga.json()["success"])
+
+    assert postojanje2 == False

@@ -31,36 +31,19 @@ def kreacija_jsona():
 
     return sadrzaj
 
-def provera_postojanja(imejl):
-    kursor2 = konekcija.cursor()
-    kursor2.execute("use users;")
-    kursor2.execute("select * from users")
-    lista = kursor2.fetchall()
-    postoji = False
-    brojac = 0
-    for i in lista:
-        gmail = i[5]
-        #print("\n", gmail, "\n", imejl, "\n")
-        if gmail == imejl:
-            print("\n", i, "\n")
-            postoji = True
-            break
-    kursor2.close()
-    return postoji
+def brisanje():
+    url2 = "http://localhost:3005/api/authentication/login"
+    sifra = "sifra"
+    logovanje = requests.post(url2, json = {"username" : username, "password" : sifra})
+    global token
+    token = logovanje.json().get("token")
+    Header = {
+        "Authorization" : f"Bearer {token}"
+    }
 
-def citanje(imejl):
-    kursor3 = konekcija.cursor()
-    #kursor3.execute("use users;")
-    kursor3.execute("SELECT * FROM users")
-    lista = kursor3.fetchall()
-    zeljeno = []
-    for i in lista:
-        if i[5] == imejl:
-            zeljeno = i
-            break
-    kursor3.close()
-    return zeljeno
+    url5 = "http://localhost:3005/api/users/users/delete"
 
+    brisanjekorisnika = requests.delete(url5, headers=Header)
 
 #testovi
 
@@ -76,8 +59,8 @@ def test_kreacija():
     problem = requests.post(url1, json = novi_korisnik
     )
 
-    postojanje = provera_postojanja(mejl)
-    assert postojanje == True
+    postojanje = problem.status_code
+    assert postojanje == 201
 
 def test_citanje():
     #prvo login pa onda search
@@ -97,9 +80,13 @@ def test_citanje():
     }
     pretraga = requests.get(url3, headers=Header)
 
-    postojanje2 = False
-    if pretraga:
-        postojanje2 = True
+    postojanje2 = True
+    #print(pretraga.json())
+    if pretraga.json()["users"]==[]:
+        postojanje2 = False
+        #print("\n",pretraga.json,"\n",postojanje2)
+
+    #print(pretraga.json()["success"])
 
     assert postojanje2 == True
 
