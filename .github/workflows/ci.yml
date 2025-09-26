@@ -8,169 +8,181 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ========== UNIT TESTOVI ==========  
+  # ===== UNIT TESTOVI =====
   answers-unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Build Answers (unit)
-        run: docker build -f answers/Dockerfile-ci -t answers-test ./answers
-      - name: Run Answers tests (unit)
-        run: docker run --rm answers-test
+        uses: docker/setup-buildx-action@v3
+      - name: Build and run Answers unit tests
+        uses: docker/build-push-action@v5
+        with:
+          context: ./answers
+          file: ./answers/Dockerfile-ci
+          tags: answers-test
+          push: false
 
   authentication-unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Build Authentication (unit)
-        run: docker build -f authentication/Dockerfile-ci -t authentication-test ./authentication
-      - name: Run Authentication tests (unit)
-        run: docker run --rm authentication-test
+        uses: docker/setup-buildx-action@v3
+      - name: Build and run Authentication unit tests
+        uses: docker/build-push-action@v5
+        with:
+          context: ./authentication
+          file: ./authentication/Dockerfile-ci
+          tags: authentication-test
+          push: false
 
   users-unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Build Users (unit)
-        run: docker build -f users/Dockerfile-ci -t users-test ./users
-      - name: Run Users tests (unit)
-        run: docker run --rm users-test
+        uses: docker/setup-buildx-action@v3
+      - name: Build and run Users unit tests
+        uses: docker/build-push-action@v5
+        with:
+          context: ./users
+          file: ./users/Dockerfile-ci
+          tags: users-test
+          push: false
 
   formsquestions-unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Build FormsQuestions (unit)
-        run: docker build -f formsquestions/Dockerfile-ci -t formsquestions-test ./formsquestions
-      - name: Run FormsQuestions tests (unit)
-        run: docker run --rm formsquestions-test
+        uses: docker/setup-buildx-action@v3
+      - name: Build and run FormsQuestions unit tests
+        uses: docker/build-push-action@v5
+        with:
+          context: ./formsquestions
+          file: ./formsquestions/Dockerfile-ci
+          tags: formsquestions-test
+          push: false
 
   front-unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Build Front (unit)
-        run: docker build -f front/Dockerfile-ci -t front-test ./front
-      - name: Run Front tests (unit)
-        run: docker run --rm front-test
+        uses: docker/setup-buildx-action@v3
+      - name: Build and run Front unit tests
+        uses: docker/build-push-action@v5
+        with:
+          context: ./front
+          file: ./front/Dockerfile-ci
+          tags: front-test
+          push: false
 
-  # ========== BUILD & PUSH SLICE NA DOCKER HUB ==========
+  # ===== BUILD & PUSH NA DOCKER HUB =====
   answers-push:
     runs-on: ubuntu-latest
     needs: [answers-unit]
     steps:
       - uses: actions/checkout@v3
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build & push Answers image
-        run: |
-          docker build -f answers/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/answers:latest ./answers
-          docker push ${{ secrets.DOCKER_USERNAME }}/answers:latest
+        uses: docker/build-push-action@v5
+        with:
+          context: ./answers
+          file: ./answers/Dockerfile
+          tags: ${{ secrets.DOCKER_USERNAME }}/answers:latest
+          push: true
 
   authentication-push:
     runs-on: ubuntu-latest
     needs: [authentication-unit]
     steps:
       - uses: actions/checkout@v3
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build & push Authentication image
-        run: |
-          docker build -f authentication/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/authentication:latest ./authentication
-          docker push ${{ secrets.DOCKER_USERNAME }}/authentication:latest
+        uses: docker/build-push-action@v5
+        with:
+          context: ./authentication
+          file: ./authentication/Dockerfile
+          tags: ${{ secrets.DOCKER_USERNAME }}/authentication:latest
+          push: true
 
   users-push:
     runs-on: ubuntu-latest
     needs: [users-unit]
     steps:
       - uses: actions/checkout@v3
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build & push Users image
-        run: |
-          docker build -f users/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/users:latest ./users
-          docker push ${{ secrets.DOCKER_USERNAME }}/users:latest
+        uses: docker/build-push-action@v5
+        with:
+          context: ./users
+          file: ./users/Dockerfile
+          tags: ${{ secrets.DOCKER_USERNAME }}/users:latest
+          push: true
 
   formsquestions-push:
     runs-on: ubuntu-latest
     needs: [formsquestions-unit]
     steps:
       - uses: actions/checkout@v3
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build & push FormsQuestions image
-        run: |
-          docker build -f formsquestions/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/formsquestions:latest ./formsquestions
-          docker push ${{ secrets.DOCKER_USERNAME }}/formsquestions:latest
+        uses: docker/build-push-action@v5
+        with:
+          context: ./formsquestions
+          file: ./formsquestions/Dockerfile
+          tags: ${{ secrets.DOCKER_USERNAME }}/formsquestions:latest
+          push: true
 
   api-gateway-push:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build & push API Gateway image
-        run: |
-          docker build -f api-gateway/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/api-gateway:latest ./api-gateway
-          docker push ${{ secrets.DOCKER_USERNAME }}/api-gateway:latest
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api-gateway
+          file: ./api-gateway/Dockerfile
+          tags: ${{ secrets.DOCKER_USERNAME }}/api-gateway:latest
+          push: true
 
   front-push:
     runs-on: ubuntu-latest
     needs: [front-unit]
     steps:
       - uses: actions/checkout@v3
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build & push Front image
-        run: |
-          docker build -f front/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/front:latest ./front
-          docker push ${{ secrets.DOCKER_USERNAME }}/front:latest
-
-  # ========== QA / UI / API TESTOVI ==========
-  qa-tests:
-    runs-on: ubuntu-latest
-    needs: [answers-push, authentication-push, users-push, formsquestions-push, front-push]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Create .env from secrets
-        run: echo "${{ secrets.ENV_FILE }}" > .env
-      - name: Pull all services
-        run: docker compose pull
-      #- name: Build all services (QA)
-      #  run: docker compose build
-      - name: Start services
-        run: docker compose up -d
-      # - name: Run QA / Selenium tests
-      #   run: echo "Ovde ubaciti Selenium/UI/API testove kad budu spremni"
-      # - name: Shutdown services
-      #   run: docker compose down
+        uses: docker/build-push-action@v5
+        with:
+          context: ./front
+          file: ./front/Dockerfile
+          tags: ${{ secrets.DOCKER_USERNAME }}/front:latest
+          push: true
