@@ -57,7 +57,6 @@ services:
       - ./.env
     volumes:
       - ./users:/usersapp
-      - /usersapp/node_modules  
     networks:
       - app-network
     depends_on:
