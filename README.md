@@ -15,7 +15,7 @@ Nakon što je korisnik pulovao kod sa git repozitorijuma, može pokretati servis
 
 *1)Lokalni build dvelopment. Ovaj pristup se koristi kada želite lokalni razvoj i debugging.
 *a)Potrebno je prvo instalirati sve dependencies za svaki servis:
-```bash
+```
 cd formsquestions 
 npm install
 cd ../answers
@@ -27,18 +27,18 @@ npm install
 cd ../api-gateway
 npm install```
 *b)Pokrenuti build slika
-```bash
+```
 docker compose build```
 *c)Pokrenuti kontejnere
-```bash
+```
 docker compose up -d```
 
 **2)Korišćenje slika sa Docker Hub-a**
 *a)Pull gotovih slika
-```bash
+```
 docker compose -f docker-compose.pull.yml pull```
 *b)Pokretanje kontejnera
-```bash
+```
 docker compose -f docker-compose.pull.yml up -d```
 
 
