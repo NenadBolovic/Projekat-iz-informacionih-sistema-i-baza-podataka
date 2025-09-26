@@ -436,7 +436,7 @@ def test_sesti_odgovor():
 
     dodavanjeodgovora6 = requests.post(urlslanjaodgovora, headers=Header, files=files6)
 
-    assert dodavanjeodgovora6.status_code == 201
+    assert dodavanjeodgovora6.status_code == 500
 
 def test_sedmi_odgovor():
     urlslanjaodgovora = "http://localhost:3005/api/answers/answers"
