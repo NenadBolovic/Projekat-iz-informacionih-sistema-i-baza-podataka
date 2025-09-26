@@ -14,6 +14,8 @@ services:
       - "3006:3006"
     env_file:
       - ./.env
+    volumes:
+      - formsquestions-images:/usr/src/app/uploads
     networks:
       - app-network
     depends_on:
@@ -26,6 +28,8 @@ services:
       - "3002:3002"
     env_file:
       - ./.env
+    volumes:
+      - answers-images:/usr/src/app/uploads
     networks:
       - app-network
     depends_on:
