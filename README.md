@@ -37,6 +37,12 @@ c)Pokrenuti kontejnere
 docker compose up -d
 ```
 
+Za pokretanje unit testova potrebno je izvršiti komande(primer za formsquestions)
+```
+cd formsquestions
+npm test
+```
+
 **2)Korišćenje slika sa Docker Hub-a**
 
 a)Pull gotovih Docker slika
