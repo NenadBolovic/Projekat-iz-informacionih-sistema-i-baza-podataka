@@ -26,10 +26,10 @@ cd ../authentication
 npm install
 cd ../api-gateway
 npm install```
-**b)Pokrenuti build slika**
+b)Pokrenuti build slika
 ```bash
 docker compose build```
-**c)Pokrenuti kontejnere**
+c)Pokrenuti kontejnere
 ```bash
 docker compose up -d```
 
