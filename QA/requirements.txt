@@ -1,0 +1,7 @@
+selenium
+requests
+pymongo
+pytest
+argon2-cffi
+mysql-connector-python
+uuid
