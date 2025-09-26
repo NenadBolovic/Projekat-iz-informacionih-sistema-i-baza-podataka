@@ -28,7 +28,7 @@ npm install
 cd ../api-gateway
 npm install
 ```
-b)Pokrenuti build slika
+b)Pokrenuti build Docker slika
 ```
 docker compose build
 ```
@@ -39,7 +39,7 @@ docker compose up -d
 
 **2)Korišćenje slika sa Docker Hub-a**
 
-a)Pull gotovih slika
+a)Pull gotovih Docker slika
 ```
 docker compose -f docker-compose.pull.yml pull
 ```
@@ -47,6 +47,25 @@ b)Pokretanje kontejnera
 ```
 docker compose -f docker-compose.pull.yml up -d
 ```
+**3)Pokretanje integracionih testova**
 
-
+Za pokretanje integracionih testova potrebno je instalirati sledeće Python pakete:
+```
+pip install selenium
+pip install time
+pip install random
+pip install requests
+pip install uuid
+pip pymongo
+pip install datetime
+pip install json
+pip install pytest
+pip install argon2
+pip install mysql.connector
+```
+Svi testovi se pokreću pomoću komade **pytest** u terminalu. Lokacija testova je folder QA.
+```
+cd QA
+pytest
+```
 
