@@ -7,11 +7,84 @@ import uuid
 from pymongo import MongoClient
 import datetime
 import json
-from test_Users_CRUD import kreacija_jsona
-from test_Formulari_CRUD import kreacijaforme
 import time
 
-def test_inicijalna_forma():
+def kreacija_jsona():
+    #unikatan username i imejl
+    username = uuid.uuid4().hex
+    email = f"{uuid.uuid4().hex}@gmail.com"
+    sadrzaj = {
+        "firstname": "ime",
+        "lastname": "prezime",
+        "username": username,
+        "password": "sifra",
+        "email": email
+    }
+
+    return sadrzaj
+
+def kreacijaforme():
+    dodatakimena = str(uuid.uuid4().hex)
+    global name
+    name = "CRUD" + dodatakimena
+    description = "test deskripcija"
+    indicator = 0
+    locked = 0
+    #authID = 1
+    collaborators = []
+    observers = []
+    questions = []
+    #createdAt = datetime.datetime.now()
+    #updatedAt = datetime.datetime.now()
+    #__v = 0
+
+    formaldehid = {
+        "name" : name,
+        "description" : description,
+        "indicator" : indicator,
+        "locked" : locked,
+        #"authID" : authID,
+        "collaborators" : collaborators,
+        "observers" : observers,
+        "questions" : questions
+        #"createdAt" : createdAt,
+        #"updatedAt" : updatedAt,
+        #"__v" : __v
+    }
+
+    return formaldehid
+
+def brisanje1():
+    url2 = "http://localhost:3005/api/authentication/login"
+    sifra = "sifra"
+    logovanje = requests.post(url2, json = {"username" : username, "password" : sifra})
+    global token
+    token = logovanje.json().get("token")
+    Header = {
+        "Authorization" : f"Bearer {token}"
+    }
+
+    url5 = "http://localhost:3005/api/users/users/delete"
+
+    brisanjekorisnika = requests.delete(url5, headers=Header)
+
+    urlpretrage = "http://localhost:3005/api/formsquestions/forms/search?q=" + name
+    promenaforma = requests.get(urlpretrage, headers=Header)
+
+    jsoni = promenaforma.json()
+    prvaforma = jsoni["forms"][0]
+    idforme = prvaforma["_id"]
+
+    urlbrisanja = "http://localhost:3005/api/formsquestions/forms/deleteForm"
+    jsonbrisanja = {
+        "formId" : idforme
+    }
+
+    brisanje = requests.delete(urlbrisanja, headers=Header, json=jsonbrisanja)
+
+
+def test_dodavanja_pitanja():
+    #kreacija forme 
     #registracija
     inicijalnikorisnik = kreacija_jsona()
     urlregistracija = 'http://localhost:3005/api/authentication/register'
@@ -41,10 +114,8 @@ def test_inicijalna_forma():
 
     kreacija = requests.post(urlkreacija, headers=Header, files=files)
 
-    assert kreacija.status_code == 201
-
-def test_dobijanja_ida():
-    urlpretrage = "http://localhost:3005/api/formsquestions/forms/search?q=CRUD"
+    #dobijanje id forme
+    urlpretrage = "http://localhost:3005/api/formsquestions/forms/search?q=" + name
     promenaforma = requests.get(urlpretrage, headers=Header)
 
     jsoni = promenaforma.json()
@@ -53,9 +124,7 @@ def test_dobijanja_ida():
     idforme = 0
     idforme = prvaforma["_id"]
 
-    assert idforme != 0
-
-def test_dobijanje_user_ida():
+    #dobijanje id korisnika
     urlpretragekorisnik = "http://localhost:3005/api/users/users/search/" + str(username)
 
     trazenikorisnik = requests.get(urlpretragekorisnik, headers=Header)
@@ -67,13 +136,8 @@ def test_dobijanje_user_ida():
     global idkorisnika
     idkorisnika = korisnik["userId"]
 
-    postojanje = False
-    if idkorisnika:
-        postojanje = True
+    #zapravo rad
 
-    assert postojanje == True
-
-def test_dodavanja_pitanja():
     urlzadodavanje = "http://localhost:3005/api/formsquestions/questions/addQuestions"
 
     nelosjson = {
@@ -95,9 +159,11 @@ def test_dodavanja_pitanja():
         "formData": (None, json.dumps(nelosjson), 'application/json')
     }
 
+    Header = {}
+
     dodavanjepitanja = requests.post(urlzadodavanje, headers=Header,files=files)
 
-    assert dodavanjepitanja.status_code == 201
+    assert dodavanjepitanja.status_code == 401
 
 def test_slanje_odgovora():
     urlslanjaodgovora = "http://localhost:3005/api/answers/answers"
@@ -119,39 +185,29 @@ def test_slanje_odgovora():
 
     #print(files)
 
+    #ne moze se slati na adresu koja ne postoji
+
     dodavanjeodgovora = requests.post(urlslanjaodgovora, headers=Header, files=files)
     
-    assert dodavanjeodgovora.status_code == 201
+    assert dodavanjeodgovora.status_code == 500
+    
 
 def test_grupirani_odgovori():
     urlgrupirano = "http://localhost:3005/api/answers/answers/getGroupedAnswers/" + str(idforme) + "/0"
 
     grupiraniodgovori = requests.get(urlgrupirano, headers=Header)
 
-    assert grupiraniodgovori.status_code == 200
+    #print("\n",grupiraniodgovori.json())
+
+    assert grupiraniodgovori.status_code == 401
 
 def test_svi_odgovori_korisnika():
     urlsvi = "http://localhost:3005/api/answers/answers/getUsersAnswers/" + str(idforme) + "/" + str(idkorisnika)
 
     sviodgovori = requests.get(urlsvi, headers=Header)
 
-    assert sviodgovori.status_code == 200
+    #print("\n",sviodgovori.json())
 
-def test_brisanje_forme():
-    urlbrisanja = "http://localhost:3005/api/formsquestions/forms/deleteForm"
-    jsonbrisanja = {
-        "formId" : idforme
-    }
-    brisanje = requests.delete(urlbrisanja, headers=Header, json=jsonbrisanja)
-    assert brisanje.status_code == 200
+    brisanje1()
 
-#ne mogu naci ovog kolaboratora iz nekog razloga
-
-def test_delete_user():
-    url5 = "http://localhost:3005/api/users/users/delete"
-
-    brisanjekorisnika = requests.delete(url5, headers=Header)
-
-    #print("\n",brisanjekorisnika.status_code,"\n")
-
-    assert brisanjekorisnika.status_code == 200
+    assert sviodgovori.status_code == 401

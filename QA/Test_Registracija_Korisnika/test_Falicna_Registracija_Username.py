@@ -15,20 +15,22 @@ def driver():
     driver.quit()
 
 
-def test_regkor(driver):
+def test_Falicnan_Username(driver):
     #nalazenje i otvaranje log in/sign up prozora
     driver.get("http://localhost:3000/")
+    time.sleep(3)
 
     dugme_ikonica = driver.find_element(By.XPATH, 
-        "//div[@class='header-avatar']//button")
+        "//button[@aria-label='Account menu']")
+    
+    time.sleep(3)
     
     dugme_ikonica.click()
     #time.sleep(3)
 
     #selektovanje sign up dugmeta
     dugme_sign_up = driver.find_element(By.XPATH, 
-        "//div[@class='MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiPopover-paper " \
-        "MuiMenu-paper MuiMenu-paper css-1tktgsa-MuiPaper-root-MuiPopover-paper-MuiMenu-paper']//ul//li[2]//a")
+        "//a[text()='Sign Up']")
     dugme_sign_up.click()
 
     #Unosenje elemenata, jedan po jedan
@@ -42,8 +44,9 @@ def test_regkor(driver):
     global string
     integer = random.randint(1,10000000)
     string = str(integer)
+    juzernejm = "Quality Assurance" + string
     dugme_input = driver.find_element(By.XPATH, "//div[@class='login-box']//form//div[3]//input")
-    dugme_input.send_keys("Quality Assurance" + string)
+    dugme_input.send_keys("")
     #Email
     dugme_input = driver.find_element(By.XPATH, "//div[@class='login-box']//form//div[4]//input")
     dugme_input.send_keys("QualityAssurance" + string + "@gmail.com")
@@ -53,18 +56,9 @@ def test_regkor(driver):
 
     dugme_signup = driver.find_element(By.XPATH, "//div[@class='login-box']//form//button")
     dugme_signup.click()
+    time.sleep(3)
 
-    time.sleep(2)
-
-    provera_paragraf = driver.find_element(By.XPATH, "//div[@class='login-box']//p[2]")
-    provera_paragraf_text = provera_paragraf.text
-
-    assert provera_paragraf_text == "Registration successful! You can now log in."
-
-def test_login(driver):
     driver.get("http://localhost:3000/login")
-    juzernejm = "Quality Assurance" + string
-    
     #username
     dugme_input = driver.find_element(By.XPATH, "//div[@class='login-box']//form//div[1]//input")
     dugme_input.send_keys(juzernejm)
@@ -76,7 +70,8 @@ def test_login(driver):
     dugme_input.click()
     time.sleep(2)
 
-    sadrzaj_polje = driver.find_element(By.CLASS_NAME, "Naziv")
-    sadrzaj_sadrzaj_polja = sadrzaj_polje.text
+    currenturl = driver.current_url
+    vrednost = str(currenturl)
+    assert vrednost == "http://localhost:3000/login"
 
-    assert sadrzaj_sadrzaj_polja == juzernejm
+    #I'm Big Poe

@@ -3,11 +3,53 @@ import uuid
 from pymongo import MongoClient
 import datetime
 import json
-from test_Users_CRUD import kreacija_jsona
-from test_Formulari_CRUD import kreacijaforme
 import time
 from selenium.webdriver.chrome.service import Service
 
+def kreacija_jsona():
+    #unikatan username i imejl
+    username = uuid.uuid4().hex
+    email = f"{uuid.uuid4().hex}@gmail.com"
+    sadrzaj = {
+        "firstname": "ime",
+        "lastname": "prezime",
+        "username": username,
+        "password": "sifra",
+        "email": email
+    }
+
+    return sadrzaj
+
+def kreacijaforme():
+    dodatakimena = str(uuid.uuid4().hex)
+    global name
+    name = "CRUD" + dodatakimena
+    description = "test deskripcija"
+    indicator = 0
+    locked = 0
+    #authID = 1
+    collaborators = []
+    observers = []
+    questions = []
+    #createdAt = datetime.datetime.now()
+    #updatedAt = datetime.datetime.now()
+    #__v = 0
+
+    formaldehid = {
+        "name" : name,
+        "description" : description,
+        "indicator" : indicator,
+        "locked" : locked,
+        #"authID" : authID,
+        "collaborators" : collaborators,
+        "observers" : observers,
+        "questions" : questions
+        #"createdAt" : createdAt,
+        #"updatedAt" : updatedAt,
+        #"__v" : __v
+    }
+
+    return formaldehid
 
 def kreacija_kolaboratora():
     #unikatan username i imejl
@@ -87,7 +129,7 @@ def test_nalazenje_kolaborator_id():
 
 def test_update_kolaborator():
     #treba da izvucem form id, napravim novu formu i da to prosledim
-    urlpretrage = "http://localhost:3005/api/formsquestions/forms/search?q=CRUD"
+    urlpretrage = "http://localhost:3005/api/formsquestions/forms/search?q=" + name
     promenaforma = requests.get(urlpretrage, headers=Header)
     #print(promenaforma)
     #kreacija korisnih podataka
@@ -146,5 +188,5 @@ def test_brisanje_kolaboratora():
     url5 = "http://localhost:3005/api/users/users/delete"
 
     brisanjekolab = requests.delete(url5, headers=Header)
-
+    
     assert brisanjekolab.status_code == 200
