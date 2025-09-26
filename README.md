@@ -13,7 +13,8 @@ Milan Nedić 608/2021 - *quality assurance engineer*
 
 Nakon što je korisnik pulovao kod sa git repozitorijuma, može pokretati servise na dva načina.
 
-1)Lokalni build dvelopment. Ovaj pristup se koristi kada želite lokalni razvoj i debugging.
+**1)Lokalni build dvelopment. Ovaj pristup se koristi kada želite lokalni razvoj i debugging.**
+
 a)Potrebno je prvo instalirati sve dependencies za svaki servis:
 ```
 cd formsquestions 
@@ -36,7 +37,8 @@ c)Pokrenuti kontejnere
 docker compose up -d
 ```
 
-2)Korišćenje slika sa Docker Hub-a
+**2)Korišćenje slika sa Docker Hub-a**
+
 a)Pull gotovih slika
 ```
 docker compose -f docker-compose.pull.yml pull
