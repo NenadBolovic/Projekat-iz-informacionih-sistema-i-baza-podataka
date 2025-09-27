@@ -87,3 +87,19 @@ pytest
 8. MySQL doker servis(users-db) sadrži bazu podataka users
 
 ![Dijagram](dijagram.png)
+
+**Korišćene third party biblioteke:**
+1. express, web framework za Node.js
+2. axios, za komunikaciju između servisa
+3. cors, cross origin resource sharing
+4. dotenv, za rad sa environment varijablama
+5. mongodb, MongoDB klijent za Node
+6. mongoose, za definisanje modela za rad sa MongoDB
+7. multer, za upload file-ova
+8. xlsx, za rad sa Excel fajlovima
+9. argon2, za heširanje lozinki
+
+**Za pisanje unit testova su korišćeni:**
+1. mocha, test framework
+2. sinon, biblioteka za mock-ovanje
+3. chai, biblioteka za proveravanje rezultata testa
