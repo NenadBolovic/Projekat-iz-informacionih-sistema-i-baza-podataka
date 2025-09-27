@@ -85,3 +85,5 @@ pytest
 6. Answers servis, Node/Express servis koji upravlja odgovorima, povezan sa MongoDB bazom answersdatabase
 7. MongoDB doker servis(mongo-db) sadrži baze podataka formsquestionsdatabase i answersdatabase
 8. MySQL doker servis(users-db) sadrži bazu podataka users
+
+![Dijagram](dijagram.png)
