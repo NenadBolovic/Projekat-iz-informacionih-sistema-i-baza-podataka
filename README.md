@@ -76,11 +76,12 @@ pytest
 ```
 
 **Arhitektura aplikacije**
-1)Frontend, React aplikacija komunicira sa API gateway-om
-2)API gateway, Node/Express servis prosleđuje api pozive odgovarajućim mikroservisima(users,authentication,answers,formsquestions)
-3)Users servis, Node/Express servis koji upravlja korisnicima, povezan sa MySQL bazom
-4)Authentication servis, Node/Express zadužen za validaciju tokena, oslanja se na users servis prilikom registracije i prijavljivanje
-5)Formsquestions servis, Node/Express servis koji upravlja formama i pitanjima, povezan sa MongoDB bazom formsquestionsdatabase
-6)Answers servis, Node/Express servis koji upravlja odgovorima, povezan sa MongoDB bazom answersdatabase
-7)MongoDB doker servis(mongo-db) sadrži baze podataka formsquestionsdatabase i answersdatabase
-8)MySQL doker servis(users-db) sadrži bazu podataka users
+
+1. Frontend, React aplikacija komunicira sa API gateway-om
+2. API gateway, Node/Express servis prosleđuje api pozive odgovarajućim mikroservisima(users,authentication,answers,formsquestions)
+3. Users servis, Node/Express servis koji upravlja korisnicima, povezan sa MySQL bazom
+4. Authentication servis, Node/Express zadužen za validaciju tokena, oslanja se na users servis prilikom registracije i prijavljivanje
+5. Formsquestions servis, Node/Express servis koji upravlja formama i pitanjima, povezan sa MongoDB bazom formsquestionsdatabase
+6. Answers servis, Node/Express servis koji upravlja odgovorima, povezan sa MongoDB bazom answersdatabase
+7. MongoDB doker servis(mongo-db) sadrži baze podataka formsquestionsdatabase i answersdatabase
+8. MySQL doker servis(users-db) sadrži bazu podataka users
