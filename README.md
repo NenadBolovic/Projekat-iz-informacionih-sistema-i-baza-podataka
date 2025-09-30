@@ -15,7 +15,7 @@ Nakon što je korisnik pulovao kod sa git repozitorijuma, može pokretati servis
 
 **1)Lokalni build dvelopment. Ovaj pristup se koristi kada želite lokalni razvoj i debugging.**
 
-a)Potrebno je prvo instalirati sve dependencies za svaki servis:
+a)Potrebno je prvo instalirati sve dependencies za svaki servis.:
 ```
 cd formsquestions 
 npm install
